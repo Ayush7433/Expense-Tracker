@@ -4,11 +4,13 @@ const connectDB = require("./config/db");
 const app = express();
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
+const expenseRoutes = require('./routes/expenseRoutes');
 
 app.use(express.json());
 app.use(cors());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/expenses", expenseRoutes);
 
 connectDB();
 
