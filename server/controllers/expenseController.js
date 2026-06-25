@@ -38,13 +38,64 @@ const getExpenses = async (req, res) => {
   try {
     const user = req.user;
 
-    const expenses = await Expense.find({ user: user._id }).sort({
-      createdAt: -1,
-    });
+    const {
+      search,
+      category,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    //Base query
+    const query = {
+      user: user._id,
+    };
+
+    //Search by title
+    if (search) {
+      query.title = {
+        $regex: search,
+        $options: "i",
+      };
+    }
+
+    //filter by category
+    if (category) {
+      query.category = category;
+    }
+
+    //filter by date range
+    if (startDate || endDate) {
+      query.expenseDate = {};
+
+      if (startDate) {
+        query.expenseDate.$gte = new Date(startDate);
+      }
+
+      if (endDate) {
+        query.expenseDate.$lte = new Date(endDate);
+      }
+    }
+
+    const skip = (page - 1) * limit;
+
+    const expenses = await Expense.find(query)
+      .sort({
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(Number(limit));
+
+      const totalExpenses = await Expense.countDocuments(query);
+
     res.status(200).json({
       success: true,
-      expenses,
       count: expenses.length,
+      totalExpenses,
+      currentPage : Number(page),
+      totalPages : Math.ceil(totalExpenses / limit),
+      expenses,
     });
   } catch (error) {
     res.status(500).json({
@@ -120,11 +171,7 @@ const deleteExpense = async (req, res) => {
 const getDashboardStats = async (req, res) => {
   try {
     const now = new Date();
-    const startOfMonth = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      1
-    );
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const stats = await Expense.aggregate([
       {
@@ -144,23 +191,23 @@ const getDashboardStats = async (req, res) => {
           averageExpenses: {
             $avg: "$amount",
           },
-          highestExpense : {
-            $max : "$amount"
+          highestExpense: {
+            $max: "$amount",
           },
-          lowestExpense : {
-            $min : "$amount"
+          lowestExpense: {
+            $min: "$amount",
           },
-          thisMonthExpense : {
-            $sum : {
-              $cond : [
+          thisMonthExpense: {
+            $sum: {
+              $cond: [
                 {
                   $gte: ["$expenseDate", startOfMonth],
                 },
                 "$amount",
-                0
+                0,
               ],
-            }
-          }
+            },
+          },
         },
       },
     ]);
@@ -175,13 +222,13 @@ const getDashboardStats = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      stats: dashboardStats 
-    })
+      stats: dashboardStats,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Error fetching dashboard stats" + error,
-    })
+    });
   }
 };
 
