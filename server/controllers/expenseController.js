@@ -76,48 +76,119 @@ const updateExpense = async (req, res) => {
     });
 
     res.status(200).json({
-        success: true,
-        message: "Expense updated successfully",
-        expense: updatedExpense
-    })
+      success: true,
+      message: "Expense updated successfully",
+      expense: updatedExpense,
+    });
   } catch (error) {
     res.status(500).json({
-        success: false,
-        message: "Error updating expense" + error,
-    })
+      success: false,
+      message: "Error updating expense" + error,
+    });
   }
 };
 
 const deleteExpense = async (req, res) => {
-    try {
-        const {id} = req.params;
-        const expense = await Expense.findOne({
-            _id : id,
-            user : req.user._id
-        });
+  try {
+    const { id } = req.params;
+    const expense = await Expense.findOne({
+      _id: id,
+      user: req.user._id,
+    });
 
-        if(!expense){
-            return res.status(404).json({
-                success : false,
-                message : "Expense not found"
-            });
-        }
-
-        const deletedExpense = await expense.deleteOne();
-
-        res.status(200).json({
-            success : true,
-            message : "Expense deleted successfully",
-        });
-
-        
-    } catch (error) {
-        res.status(500).json({
-            success : false,
-            message : "Error deleting expense" + error
-        })
-        
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        message: "Expense not found",
+      });
     }
-}
 
-module.exports = { createExpense, getExpenses, updateExpense, deleteExpense };
+    const deletedExpense = await expense.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Expense deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error deleting expense" + error,
+    });
+  }
+};
+
+const getDashboardStats = async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1
+    );
+
+    const stats = await Expense.aggregate([
+      {
+        $match: {
+          user: req.user._id,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalExpenses: {
+            $sum: 1,
+          },
+          totalAmount: {
+            $sum: "$amount",
+          },
+          averageExpenses: {
+            $avg: "$amount",
+          },
+          highestExpense : {
+            $max : "$amount"
+          },
+          lowestExpense : {
+            $min : "$amount"
+          },
+          thisMonthExpense : {
+            $sum : {
+              $cond : [
+                {
+                  $gte: ["$expenseDate", startOfMonth],
+                },
+                "$amount",
+                0
+              ],
+            }
+          }
+        },
+      },
+    ]);
+
+    const dashboardStats = stats[0] || {
+      totalExpenses: 0,
+      totalAmount: 0,
+      averageExpenses: 0,
+      highestExpense: 0,
+      lowestExpense: 0,
+    };
+
+    res.status(200).json({
+      success: true,
+      stats: dashboardStats 
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching dashboard stats" + error,
+    })
+  }
+};
+
+module.exports = {
+  createExpense,
+  getExpenses,
+  updateExpense,
+  deleteExpense,
+  getDashboardStats,
+};
