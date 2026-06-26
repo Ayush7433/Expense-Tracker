@@ -18,7 +18,7 @@ const Navbar = () => {
             name="search"
             id="search"
             placeholder="Search expenses..."
-            className="border focus:outline-none rounded-sm px-2 text-sm py-1 focus:ring-2 focus:ring-blue-400"
+            className="border focus:outline-none rounded-sm px-2 text-sm py-1 w-70 focus:ring-2 focus:ring-blue-400"
           />
         </div>
       </div>
