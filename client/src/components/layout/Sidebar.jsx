@@ -2,8 +2,11 @@ import React from "react";
 import logo from "../../assets/Logo.png";
 import { House, LogOut, NotebookText, UserRound, Wallet } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "../../redux/slices/authSlice";
 
 const Sidebar = () => {
+  const dispatch = useDispatch();
   return (
     <aside className="w-64 bg-gray-100 p-4">
       <div className="flex flex-col justify-between h-full">
@@ -54,7 +57,7 @@ const Sidebar = () => {
         </div>
 
         <div>
-          <button className="flex gap-3 items-center w-full px-4 py-3 rounded-lg bg-black text-white hover:bg-gray-700 transition-colors delay-100 cursor-pointer"><LogOut size={16} /> Logout</button>
+          <button onClick={() => dispatch(logout())} className="flex gap-3 items-center w-full px-4 py-3 rounded-lg bg-black text-white hover:bg-gray-700 transition-colors delay-100 cursor-pointer"><LogOut size={16} /> Logout</button>
         </div>
       </div>
     </aside>

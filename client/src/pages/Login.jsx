@@ -8,6 +8,7 @@ import {
 import { loginUserApi } from "../redux/services/authApi";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import loginImage from "../assets/login.jpeg"
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -57,26 +58,8 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
-        <div className="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-blue-50 to-indigo-100">
-          <div>
-            <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-              $
-            </div>
-            <h1 className="mt-8 text-4xl font-bold text-gray-900 leading-tight">
-              Take Control of
-              <span className="block text-blue-600">Your Expenses</span>
-            </h1>
-            <p className="mt-4 text-gray-600 text-lg leading-relaxed">
-              Track, manage, and analyze your spending with a modern expense
-              dashboard.
-            </p>
-          </div>
-
-          <div className="rounded-3xl bg-white/80 backdrop-blur p-6 shadow-lg border border-white/60">
-            <div className="h-40 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600 text-xl font-semibold">
-              Expense Tracker
-            </div>
-          </div>
+        <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-blue-50 to-indigo-100">
+          <img src={loginImage} className="h-160 " alt="" />
         </div>
 
         <div className="p-8 sm:p-10 lg:p-12">

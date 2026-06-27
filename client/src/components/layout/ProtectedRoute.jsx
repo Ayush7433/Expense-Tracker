@@ -1,4 +1,4 @@
-import { useSelector } from "@reduxjs/toolkit";
+import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
 const ProtecredRoute = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
