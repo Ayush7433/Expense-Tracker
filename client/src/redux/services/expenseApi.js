@@ -1,28 +1,51 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
-export const getExpenseApi = async (params ={}) => {
-    const token = localStorage.getItem("token");
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  };
+};
 
-    const searchParam = new URLSearchParams();
+export const getExpenseApi = async (params = {}) => {
+  const searchParam = new URLSearchParams();
 
-    Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !==null && value !== ""){
-            searchParam.append(key, String(value));
-        }
-    });
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParam.append(key, String(value));
+    }
+  });
 
-    const queryString = searchParam.toString();
-    const url = queryString
+  const queryString = searchParam.toString();
+  const url = queryString
     ? `${API_BASE_URL}/expenses/expenses?${queryString}`
     : `${API_BASE_URL}/expenses/expenses`;
 
-    const response = await axios.get(url, {
-        headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-        }
-    });
+  const response = await axios.get(url, getAuthHeaders());
+  return response.data;
+};
+
+export const createExpenseApi = async (expenseData) => {
+    const response = await axios.post(
+        `${API_BASE_URL}/expenses/expenses`,
+        expenseData,
+        getAuthHeaders()
+    );
 
     return response.data;
+}
+
+export const updateExpenseApi = async (expenseId, expenseData) => {
+    const response = await axios.put(
+        `${API_BASE_URL}/expenses/expenses/${expenseId}`,
+        expenseData,
+        getAuthHeaders()
+    );
+
+    return response.data
 }
