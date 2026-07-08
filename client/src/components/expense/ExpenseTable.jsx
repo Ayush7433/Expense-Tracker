@@ -23,6 +23,7 @@ const ExpenseTable = ({
   expenses = [],
   loading = false,
   pagination = {},
+  onEdit,
 }) => {
   if (loading) {
     return (
@@ -120,9 +121,9 @@ const ExpenseTable = ({
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        disabled
-                        title="Edit coming soon"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition"
+                        onClick={() => onEdit?.(expense)}
+                        title="Edit expense"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50"
                       >
                         <PencilLine size={16} />
                       </button>
