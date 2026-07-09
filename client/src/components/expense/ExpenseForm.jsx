@@ -71,7 +71,7 @@ const ExpenseForm = ({
       return;
     }
 
-    onsubmit({
+    onSubmit({
       title: formData.title.trim(),
       amount: Number(formData.amount),
       category: formData.category,
@@ -93,7 +93,7 @@ const ExpenseForm = ({
             value={formData.title}
             onChange={handleChange}
             placeholder="e.g Groceries"
-            className="w-full rounded-2xl border border-gray-200 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="w-full rounded-2xl border border-gray-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             required
           />
         </div>
@@ -110,7 +110,7 @@ const ExpenseForm = ({
             placeholder="0.00"
             min="0.01"
             step="0.01"
-            className="w-full rounded-2xl border border-gray-200 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="w-full rounded-2xl border border-gray-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             required
           />
         </div>
@@ -126,7 +126,7 @@ const ExpenseForm = ({
             placeholder="0.00"
             min="0.01"
             step="0.01"
-            className="w-full rounded-2xl border border-gray-200 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="w-full rounded-2xl border border-gray-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             required
           >
             <option value="">Select a category</option>
@@ -147,7 +147,7 @@ const ExpenseForm = ({
             name="expenseDate"
             value={formData.expenseDate}
             onChange={handleChange}
-            className="w-full rounded-2xl border border-gray-200 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="w-full rounded-2xl border border-gray-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             required
           />
         </div>
@@ -171,7 +171,7 @@ const ExpenseForm = ({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-2xl border border-gray-200 px-5 py-3 font-medium text-gray-700 hover:bg-gray-50"
+          className="rounded-2xl border border-gray-200 px-5 py-3 font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
         >
           Cancel
         </button>
@@ -179,7 +179,7 @@ const ExpenseForm = ({
         <button
           type="submit"
           disabled={loading}
-          className="rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+          className="rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
         >
           {loading
             ? "Saving..."

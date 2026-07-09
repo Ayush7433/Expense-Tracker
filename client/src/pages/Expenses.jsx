@@ -5,7 +5,10 @@ import { Plus, RefreshCw } from "lucide-react";
 import { fetchExpenses } from "../redux/slices/expenseSlice";
 import ExpenseTable from "../components/expense/ExpenseTable";
 import Loader from "../components/common/Loader";
-import { createExpenseApi, updateExpenseApi } from "../redux/services/expenseApi";
+import {
+  createExpenseApi,
+  updateExpenseApi,
+} from "../redux/services/expenseApi";
 import Modal from "../components/common/Modal";
 import ExpenseForm from "../components/expense/ExpenseForm";
 
@@ -13,7 +16,7 @@ const Expenses = () => {
   const dispatch = useDispatch();
 
   const { expenses, loading, error, pagination } = useSelector(
-    (state) => state.expense
+    (state) => state.expense,
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,25 +33,30 @@ const Expenses = () => {
     }
   }, [error]);
 
-  const openAddModal = (expense) => {
+  const openAddModal = () => {
+    setSelectedExpense(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (expense) => {
     setSelectedExpense(expense);
     setIsModalOpen(true);
-  }
+  };
 
   const closeModal = () => {
-    if(formLoading) return;
-    setIsModalOpen(true);
+    if (formLoading) return;
+    setIsModalOpen(false);
     setSelectedExpense(null);
   };
 
   const handleSubmit = async (formData) => {
-    try{
+    try {
       setFormLoading(true);
 
-      if(selectedExpense?._id){
+      if (selectedExpense?._id) {
         await updateExpenseApi(selectedExpense._id, formData);
         toast.success("Expense updated successfully");
-      }else{
+      } else {
         await createExpenseApi(formData);
         toast.success("Expense created successfully");
       }
@@ -56,14 +64,17 @@ const Expenses = () => {
       setIsModalOpen(false);
       setSelectedExpense(null);
 
-      dispatch(fetchExpenses({ page: 1, limit: 10}));
-    }catch(error){
-      const message = error.response?.data?.message || error.message || "Something went wrong";
+      dispatch(fetchExpenses({ page: 1, limit: 10 }));
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong";
       toast.error(message);
-    }finally{
+    } finally {
       setFormLoading(false);
     }
-  }
+  };
 
   const handleRetry = () => {
     dispatch(fetchExpenses({ page: 1, limit: 10 }));
@@ -110,6 +121,7 @@ const Expenses = () => {
           expenses={expenses}
           loading={loading}
           pagination={pagination}
+          onEdit={openEditModal}
         />
       )}
 
@@ -117,14 +129,14 @@ const Expenses = () => {
         open={isModalOpen}
         title={selectedExpense ? "Edit Expense" : "Add Expense"}
         onClose={closeModal}
-        >
-          <ExpenseForm
-            initialValues={selectedExpense}
-            loading={formLoading}
-            onCancel={closeModal}
-            onSubmit={handleSubmit}  
-          />
-        </Modal>
+      >
+        <ExpenseForm
+          initialValues={selectedExpense}
+          loading={formLoading}
+          onCancel={closeModal}
+          onSubmit={handleSubmit}
+        />
+      </Modal>
     </div>
   );
 };
