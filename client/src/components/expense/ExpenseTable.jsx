@@ -24,6 +24,7 @@ const ExpenseTable = ({
   loading = false,
   pagination = {},
   onEdit,
+  onDelete
 }) => {
   if (loading) {
     return (
@@ -123,15 +124,14 @@ const ExpenseTable = ({
                         type="button"
                         onClick={() => onEdit?.(expense)}
                         title="Edit expense"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 hover:bg-gray-50 hover:text-gray-700 bg-white text-gray-400 transition cursor-pointer"
                       >
                         <PencilLine size={16} />
                       </button>
                       <button
                         type="button"
-                        disabled
-                        title="Delete coming soon"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition"
+                        onClick={() => onDelete(expense)}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 hover:bg-red-50 hover:text-red-600 bg-white text-gray-400 transition cursor-pointer"
                       >
                         <Trash2 size={16} />
                       </button>

@@ -218,6 +218,7 @@ const getDashboardStats = async (req, res) => {
       averageExpenses: 0,
       highestExpense: 0,
       lowestExpense: 0,
+      thisMonthExpense: 0,
     };
 
     res.status(200).json({

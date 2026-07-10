@@ -7,10 +7,12 @@ import ExpenseTable from "../components/expense/ExpenseTable";
 import Loader from "../components/common/Loader";
 import {
   createExpenseApi,
+  deleteExpenseApi,
   updateExpenseApi,
 } from "../redux/services/expenseApi";
 import Modal from "../components/common/Modal";
 import ExpenseForm from "../components/expense/ExpenseForm";
+import DeleteConfirmationModal from "../components/common/DeleteConfirmationModal";
 
 const Expenses = () => {
   const dispatch = useDispatch();
@@ -22,6 +24,9 @@ const Expenses = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [deleteOpenModal, setDeleteOpenModal] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     dispatch(fetchExpenses({ page: 1, limit: 10 }));
@@ -49,6 +54,20 @@ const Expenses = () => {
     setSelectedExpense(null);
   };
 
+  const openDeleteModal = (expense) => {
+    if(deleteLoading) return;
+
+    setExpenseToDelete(expense);
+    setDeleteOpenModal(true);
+  }
+
+    const closeDeleteModal = () => {
+    if(deleteLoading) return;
+
+    setExpenseToDelete(null);
+    setDeleteOpenModal(false);
+  }
+
   const handleSubmit = async (formData) => {
     try {
       setFormLoading(true);
@@ -75,6 +94,30 @@ const Expenses = () => {
       setFormLoading(false);
     }
   };
+
+  const handleDeleteExpense = async () => {
+    try{
+      setDeleteLoading(true);
+
+      await deleteExpenseApi(expenseToDelete._id);
+      toast.success("Expense deleted successfully");
+      closeDeleteModal();
+
+      dispatch(
+        fetchExpenses({
+          page: 1,
+          limit: 10,
+        })
+      );
+    }catch(error){
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to delete expense"
+      );
+    }finally{
+      setDeleteLoading(false);
+    }
+  }
 
   const handleRetry = () => {
     dispatch(fetchExpenses({ page: 1, limit: 10 }));
@@ -122,6 +165,7 @@ const Expenses = () => {
           loading={loading}
           pagination={pagination}
           onEdit={openEditModal}
+          onDelete={openDeleteModal}
         />
       )}
 
@@ -137,6 +181,12 @@ const Expenses = () => {
           onSubmit={handleSubmit}
         />
       </Modal>
+      <DeleteConfirmationModal 
+        open={deleteOpenModal}
+        loading={deleteLoading}
+        onCancel={closeDeleteModal}
+        onConfirm={handleDeleteExpense}
+      />
     </div>
   );
 };
