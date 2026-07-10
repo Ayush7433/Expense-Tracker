@@ -59,10 +59,6 @@ const ExpenseForm = ({
       return;
     }
 
-    if (!formData.title.trim()) {
-      return;
-    }
-
     if (!formData.amount || Number(formData.amount) <= 0) {
       return;
     }

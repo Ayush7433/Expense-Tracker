@@ -49,3 +49,12 @@ export const updateExpenseApi = async (expenseId, expenseData) => {
 
     return response.data
 }
+
+export const deleteExpenseApi = async (expenseId) => {
+  const response = await axios.delete(
+    `${API_BASE_URL}/expenses/expenses/${expenseId}`,
+    getAuthHeaders()
+  );
+
+  return response.data;
+}
