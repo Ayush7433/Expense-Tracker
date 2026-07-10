@@ -1,9 +1,28 @@
-import React from 'react'
+const StatsCard = ({ title, value, icon, color = "blue" }) => {
+  const colorMap = {
+    blue: "bg-blue-50 text-blue-600",
+    green: "bg-green-50 text-green-600",
+    purple: "bg-purple-50 text-purple-600",
+    orange: "bg-orange-50 text-orange-600",
+    red: "bg-red-50 text-red-600",
+  };
 
-const StatsCard = () => {
   return (
-    <div>StatsCard</div>
-  )
-}
+    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-md">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <h3 className="mt-2 text-2xl font-bold text-gray-900">{value}</h3>
+        </div>
 
-export default StatsCard
+        <div
+          className={`flex h-12 w-12 items-center justify-center rounded-2xl ${colorMap[color] || colorMap.blue}`}
+        >
+          {icon}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StatsCard;
