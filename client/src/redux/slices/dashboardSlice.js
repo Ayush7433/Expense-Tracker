@@ -30,7 +30,7 @@ export const fetchDashboardData = createAsyncThunk(
 const initialState = {
     totalExpenses: 0,
     totalAmount: 0,
-    averageExpense: 0,
+    averageExpenses: 0,
     highestExpense: 0,
     lowestExpense: 0,
     thisMonthExpense: 0,
@@ -62,7 +62,7 @@ const dashboardSlice = createSlice({
 
             state.totalExpenses = stats.totalExpenses || 0;
             state.totalAmount = stats.totalAmount || 0;
-            state.averageExpense = stats.averageExpense || 0;
+            state.averageExpenses = stats.averageExpenses || 0;
             state.highestExpense = stats.highestExpense || 0;
             state.lowestExpense = stats.lowestExpense || 0;
             state.thisMonthExpense = stats.thisMonthExpense || 0;

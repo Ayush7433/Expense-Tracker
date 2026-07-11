@@ -11,39 +11,67 @@ const formatDate = (dateValue) => {
 const RecentExpenses = ({ expenses = [] }) => {
   return (
     <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Recent Expenses</h3>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-semibold text-gray-900">
+          Recent Expenses
+        </h3>
 
-        <div className="mt-5 space-y-5">
-          {expenses.length === 0 ? (
-            <p className="text-sm text-gray-500">No recent expenses found.</p>
-          ) : (
-            expenses.map((expense) => (
-              <div
-                key={expense._id}
-                className="flex items-center justify-between rounded-2xl border border-gray-100 px-4 py-4"
-              >
-                <div>
-                  <p className="font-medium text-gray-400">{expense.title}</p>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {expense.category}
-                  </p>
+        <span className="text-sm text-gray-500">
+          {expenses.length} Expenses
+        </span>
+      </div>
+
+      {/* Empty State */}
+      {expenses.length === 0 ? (
+        <div className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-gray-200">
+          <p className="text-gray-500">
+            No recent expenses found.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {expenses.map((expense) => (
+            <div
+              key={expense._id}
+              className="flex items-center justify-between rounded-2xl border border-gray-100 px-5 py-4 transition-all hover:border-blue-200 hover:bg-blue-50/40"
+            >
+              {/* Left */}
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-xl">
+                  💸
                 </div>
 
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900">
-                    ₹{Number(expense.amount || 0).toLocaleString("en-IN")}
-                  </p>
+                <div>
+                  <h4 className="font-semibold text-gray-900">
+                    {expense.title}
+                  </h4>
 
-                  <p className="mt-1 text-sm text-gray-500">
-                    {formatDate(expense.expenseDate || expense.createdAt)}
-                  </p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
+                      {expense.category}
+                    </span>
+
+                    <span className="text-sm text-gray-500">
+                      {formatDate(
+                        expense.expenseDate || expense.createdAt
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
-            ))
-          )}
+
+              {/* Right */}
+              <div className="text-right">
+                <p className="text-lg font-bold text-gray-900">
+                  ₹
+                  {Number(expense.amount).toLocaleString("en-IN")}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      )}
     </div>
   );
 };

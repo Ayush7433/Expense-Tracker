@@ -54,7 +54,7 @@ const Dashboard = () => {
 
         <StatsCard
           title="Average Expense"
-          value={`₹${Number(dashboard.averageExpense || 0).toFixed(2)}`}
+          value={`₹${Number(dashboard.averageExpenses || 0).toFixed(2)}`}
           icon={<TrendingUp size={22} />}
           color="purple"
         />
