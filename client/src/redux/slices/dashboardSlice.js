@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { getDashboardStatsApi } from "../services/dashboardApi";
 import { getExpenseApi } from "../services/expenseApi";
 
-export const fetchcDashboardData = createAsyncThunk(
+export const fetchDashboardData = createAsyncThunk(
   "dashboard/fetchDashboardData",
   async (_, { rejectWithValue }) => {
     try {
@@ -50,11 +50,11 @@ const dashboardSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-        .addCase(fetchcDashboardData.pending, (state) => {
+        .addCase(fetchDashboardData.pending, (state) => {
             state.loading = true;
             state.error = null;
         })
-        .addCase(fetchcDashboardData.fulfilled, (state, action) => {
+        .addCase(fetchDashboardData.fulfilled, (state, action) => {
             state.loading = false;
             state.error = null;
 
@@ -70,7 +70,7 @@ const dashboardSlice = createSlice({
             state.recentExpenses = action.payload?.recentExpenses || [];
             state.chartExpenses = action.payload?.chartExpenses || [];
         })
-        .addCase(fetchcDashboardData.rejected, (state, action) => {
+        .addCase(fetchDashboardData.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload || "Failed to load dashboard data";
         })
