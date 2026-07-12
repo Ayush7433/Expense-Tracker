@@ -19,8 +19,8 @@ export const fetchDashboardData = createAsyncThunk(
       };
     } catch (error) {
       const message =
-        error.response?.data?.messaage ||
-        error.messaage ||
+        error.response?.data?.message ||
+        error.message ||
         "Failed to load dashboard data";
       return rejectWithValue(message);
     }

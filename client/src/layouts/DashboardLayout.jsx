@@ -1,21 +1,29 @@
-import Sidebar from '../components/layout/Sidebar'
-import Navbar from '../components/layout/Navbar'
-import { Outlet } from 'react-router-dom'
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import Sidebar from "../components/layout/Sidebar";
+import Navbar from "../components/layout/Navbar";
 
 const DashboardLayout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+  const closeSidebar = () => setSidebarOpen(false);
+
   return (
-    <div className='min-h-screen flex'>
-        <Sidebar />
+    <div className="min-h-screen bg-slate-50">
+      <Sidebar open={sidebarOpen} onClose={closeSidebar} />
 
-        <div className='flex-1 flex flex-col'>
-            <Navbar />
+      <div className="min-h-screen lg:pl-72">
+        <Navbar onMenuClick={toggleSidebar} />
 
-            <main className='flex-1 p-4'>
-                <Outlet />
-            </main>
-        </div>
+        <main className="p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto w-full max-w-[1600px]">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default DashboardLayout
+export default DashboardLayout;
