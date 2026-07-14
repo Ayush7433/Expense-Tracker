@@ -16,6 +16,7 @@ import DeleteConfirmationModal from "../components/common/DeleteConfirmationModa
 import { useSearchParams } from "react-router-dom";
 import FilterBar from "../components/expense/FilterBar";
 import DateRangeFilter from "../components/expense/DateRangeFilter";
+import Pagination from "../components/expense/Pagination";
 
 const Expenses = () => {
   const dispatch = useDispatch();
@@ -186,13 +187,20 @@ const Expenses = () => {
       {loading && expenses.length === 0 ? (
         <Loader message="Loading expenses..." />
       ) : (
-        <ExpenseTable
-          expenses={expenses}
-          loading={loading}
-          pagination={pagination}
-          onEdit={openEditModal}
-          onDelete={openDeleteModal}
-        />
+        <>
+          <ExpenseTable
+            expenses={expenses}
+            loading={loading}
+            pagination={pagination}
+            onEdit={openEditModal}
+            onDelete={openDeleteModal}
+          />
+
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+          />
+        </>
       )}
 
       <Modal
