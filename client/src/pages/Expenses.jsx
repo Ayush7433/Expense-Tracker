@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
-import { Plus, RefreshCw } from "lucide-react";
+import { Funnel, Plus, RefreshCw } from "lucide-react";
 import { fetchExpenses } from "../redux/slices/expenseSlice";
 import ExpenseTable from "../components/expense/ExpenseTable";
 import Loader from "../components/common/Loader";
@@ -14,6 +14,7 @@ import Modal from "../components/common/Modal";
 import ExpenseForm from "../components/expense/ExpenseForm";
 import DeleteConfirmationModal from "../components/common/DeleteConfirmationModal";
 import { useSearchParams } from "react-router-dom";
+import FilterBar from "../components/expense/FilterBar";
 
 const Expenses = () => {
   const dispatch = useDispatch();
@@ -32,6 +33,7 @@ const Expenses = () => {
 
   const search = searchParams.get("search") || "";
   const page = Number(searchParams.get("page")) || 1;
+  const category = searchParams.get("category") || "";
 
   useEffect(() => {
     dispatch(
@@ -39,9 +41,10 @@ const Expenses = () => {
         page,
         limit: 10,
         search,
+        category,
       }),
     );
-  }, [dispatch, page, search]);
+  }, [dispatch, page, search, category]);
 
   useEffect(() => {
     if (error) {
@@ -133,22 +136,31 @@ const Expenses = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white px-6 py-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white px-6 py-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Expenses</h1>
+
           <p className="mt-2 text-sm text-gray-500">
-            Track and manage your recorded expenses in one place.
+            Track and manage your recorded expenses.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={openAddModal}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700"
-        >
-          <Plus size={18} />
-          Add Expense
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-slate-500">
+              <Funnel size={18} />
+            </label>
+            <FilterBar />
+          </div>
+
+          <button
+            onClick={openAddModal}
+            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+          >
+            <Plus size={18} />
+            Add Expense
+          </button>
+        </div>
       </div>
 
       {error ? (
