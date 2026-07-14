@@ -15,6 +15,7 @@ import ExpenseForm from "../components/expense/ExpenseForm";
 import DeleteConfirmationModal from "../components/common/DeleteConfirmationModal";
 import { useSearchParams } from "react-router-dom";
 import FilterBar from "../components/expense/FilterBar";
+import DateRangeFilter from "../components/expense/DateRangeFilter";
 
 const Expenses = () => {
   const dispatch = useDispatch();
@@ -34,6 +35,8 @@ const Expenses = () => {
   const search = searchParams.get("search") || "";
   const page = Number(searchParams.get("page")) || 1;
   const category = searchParams.get("category") || "";
+  const startDate = searchParams.get("startDate") || "";
+  const endDate = searchParams.get("endDate") || "";
 
   useEffect(() => {
     dispatch(
@@ -42,9 +45,11 @@ const Expenses = () => {
         limit: 10,
         search,
         category,
+        startDate,
+        endDate,
       }),
     );
-  }, [dispatch, page, search, category]);
+  }, [dispatch, page, search, category, startDate, endDate]);
 
   useEffect(() => {
     if (error) {
@@ -146,16 +151,17 @@ const Expenses = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-500">
-              <Funnel size={18} />
+              Categories
             </label>
             <FilterBar />
           </div>
+          <DateRangeFilter />
 
           <button
             onClick={openAddModal}
-            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700 mt-4"
           >
             <Plus size={18} />
             Add Expense
