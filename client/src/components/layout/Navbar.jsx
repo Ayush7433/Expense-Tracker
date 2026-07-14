@@ -1,27 +1,34 @@
 import { Menu, Search } from "lucide-react";
-import React from "react";
-import { useLocation } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import useDebounce from "../../hooks/useDebounce";
+import SearchInput from "../common/SearchInput";
 
 const pageMap = {
   "/dashboard": {
     title: "Dashboard",
     subtitle: "Overview of your finances",
+    showSearch: false,
   },
   "/expenses": {
     title: "Expenses",
     subtitle: "Track and manage all expenses",
+    showSearch: true,
   },
   "/profile": {
     title: "Profile",
     subtitle: "Manage your account details",
+    showSearch: false,
   },
 };
 
 const Navbar = ({ onMenuClick }) => {
   const location = useLocation();
+
   const pageInfo = pageMap[location.pathname] || {
     title: "Expense Tracker",
     subtitle: "Manage your finances",
+    showSearch: false,
   };
 
   return (
@@ -43,32 +50,18 @@ const Navbar = ({ onMenuClick }) => {
           </p>
         </div>
 
-        <div className="hidden w-full max-w-md md:block">
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm transition focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100">
-            <Search size={18} className="text-slate-400" />
-            <input
-              type="search"
-              name="search"
-              id="search"
-              placeholder="Search expenses..."
-              className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
-            />
+        {pageInfo.showSearch && (
+          <div className="hidden w-full max-w-md md:block">
+            <SearchInput placeholder="Search expenses..." />
           </div>
-        </div>
+        )}
       </div>
 
-      <div className="px-4 pb-4 sm:px-6 lg:hidden">
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm">
-          <Search size={18} className="text-slate-400" />
-          <input
-            type="search"
-            name="search-mobile"
-            id="search-mobile"
-            placeholder="Search expenses..."
-            className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
-          />
+      {pageInfo.showSearch && (
+        <div className="px-4 pb-4 sm:px-6 lg:hidden">
+          <SearchInput placeholder="Search expenses..." />
         </div>
-      </div>
+      )}
     </header>
   );
 };
