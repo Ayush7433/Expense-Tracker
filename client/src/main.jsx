@@ -7,14 +7,16 @@ import { Provider } from "react-redux";
 import { Toaster } from "sonner";
 import { store } from "./redux/store.js";
 import ErrorBoundary from "./components/common/ErrorBoundary.jsx";
+import TokenExpiryWatcher from "./components/common/TokenExpiryWatcher.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
-    <Provider store={store}>
+  <Provider store={store}>
+    <BrowserRouter>
       <ErrorBoundary>
+        <TokenExpiryWatcher />
         <App />
       </ErrorBoundary>
       <Toaster position="bottom-right" richColors />
-    </Provider>
-  </BrowserRouter>,
+    </BrowserRouter>
+  </Provider>,
 );
