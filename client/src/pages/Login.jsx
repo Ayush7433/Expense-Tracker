@@ -12,15 +12,23 @@ import loginImage from "../assets/login.jpeg";
 import AuthLayout from "../layouts/AuthLayout";
 import FormField from "../components/common/FormField";
 import AuthButton from "../components/common/AuthButton";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema } from "../utils/authSchema";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading } = useSelector((state) => state.auth);
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   const handleChange = (e) => {
@@ -32,22 +40,21 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
 
     dispatch(loginStart());
 
     try {
-      const data = await loginUserApi(formData);
+      const response = await loginUserApi(data);
 
       dispatch(
         loginSuccess({
-          user: data.user,
-          token: data.token,
-        })
+          user: response.user,
+          token: response.token,
+        }),
       );
 
-      toast.success(data.message || "Login Successful");
+      toast.success(response.message || "Login Successful");
       navigate("/dashboard");
     } catch (error) {
       const message =
@@ -64,25 +71,21 @@ const Login = () => {
       title="Welcome Back"
       subtitle="Login to continue to your dashboard"
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           label="Email"
           type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
           placeholder="Enter your email"
-          required
+          error={errors.email?.message}
+          {...register("email")}
         />
 
         <FormField
           label="Password"
           type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
           placeholder="Enter your password"
-          required
+          error={errors.password?.message}
+          {...register("password")}
         />
 
         <AuthButton loading={loading} loadingText="Logging in...">

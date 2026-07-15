@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { registerUserApi } from "../redux/services/authApi";
@@ -7,60 +7,35 @@ import AuthLayout from "../layouts/AuthLayout";
 import FormField from "../components/common/FormField";
 import AuthButton from "../components/common/AuthButton";
 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema } from "../utils/authSchema";
+
 const Register = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.password ||
-      !formData.confirmPassword
-    ) {
-      return toast.error("All fields are required");
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      return toast.error("Passwords do not match");
-    }
-
-    if (formData.password.length < 8) {
-      return toast.error("Password must have at least 8 characters");
-    }
-
+  const onSubmit = async (data) => {
     try {
-      setLoading(true);
-
-      const data = await registerUserApi({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
+      const response = await registerUserApi({
+        name: data.name,
+        email: data.email,
+        password: data.password,
       });
 
-      toast.success(data.message || "Registration Successful");
+      toast.success(response.message || "Registration Successful");
       navigate("/login");
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -70,48 +45,40 @@ const Register = () => {
       title="Create Account"
       subtitle="Start tracking your expenses"
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <FormField
           label="Name"
           type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
           placeholder="Enter your name"
-          required
+          error={errors.name?.message}
+          {...register("name")}
         />
 
         <FormField
           label="Email"
           type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
           placeholder="Enter your email"
-          required
+          error={errors.email?.message}
+          {...register("email")}
         />
 
         <FormField
           label="Password"
           type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
           placeholder="Enter your password"
-          required
+          error={errors.password?.message}
+          {...register("password")}
         />
 
         <FormField
           label="Confirm Password"
           type="password"
-          name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleChange}
           placeholder="Confirm your password"
-          required
+          error={errors.confirmPassword?.message}
+          {...register("confirmPassword")}
         />
 
-        <AuthButton loading={loading} loadingText="Creating Account...">
+        <AuthButton loading={isSubmitting} loadingText="Creating Account...">
           Create Account
         </AuthButton>
 
