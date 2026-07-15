@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+
 const StatsCard = ({ title, value, icon, color = "blue" }) => {
   const colorMap = {
     blue: "bg-blue-50 text-blue-600",
@@ -8,20 +10,30 @@ const StatsCard = ({ title, value, icon, color = "blue" }) => {
   };
 
   return (
-    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-md">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <h3 className="mt-2 text-2xl font-bold text-gray-900">{value}</h3>
-        </div>
+    <motion.div
+      whileHover={{
+        y: -4,
+        scale: 1.02,
+      }}
+      transition={{
+        duration: 0.2,
+      }}
+    >
+      <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-md">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-gray-500">{title}</p>
+            <h3 className="mt-2 text-2xl font-bold text-gray-900">{value}</h3>
+          </div>
 
-        <div
-          className={`flex h-12 w-12 items-center justify-center rounded-2xl ${colorMap[color] || colorMap.blue}`}
-        >
-          {icon}
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-2xl ${colorMap[color] || colorMap.blue}`}
+          >
+            {icon}
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

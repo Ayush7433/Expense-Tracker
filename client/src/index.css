@@ -1,1 +1,35 @@
 @import "tailwindcss";
+
+.recharts-wrapper:focus,
+.recharts-surface:focus,
+.recharts-responsive-container:focus {
+  outline: none;
+}
+
+.recharts-wrapper *:focus {
+  outline: none;
+}
+
+/* Hide scrollbar for Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Hide scrollbar for Firefox */
+* {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar for IE/Old Edge */
+* {
+  -ms-overflow-style: none;
+}
