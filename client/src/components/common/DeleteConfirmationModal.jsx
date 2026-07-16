@@ -1,38 +1,43 @@
 import React from "react";
+import { Trash2 } from "lucide-react";
+import Modal from "./Modal";
+import Button from "./Button";
 
-const DeleteConfirmationModal = ({ open, loading, onCancel, onConfirm }) => {
-  if (!open) return null;
+const DeleteConfirmationModal = ({ open, onCancel, onConfirm, loading }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/40"
-        onClick={loading ? undefined : onCancel}
-      />
+    <Modal open={open} onClose={onCancel} title="Delete Expense">
+      <div className="space-y-6 text-center sm:text-left">
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:h-10 sm:w-10">
+            <Trash2 className="h-6 w-6 text-red-600" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">
+              Are you sure you want to delete this expense? This action cannot be
+              undone.
+            </p>
+          </div>
+        </div>
 
-      <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
-        <h2 className="text-xl font-semibold">Delete Expense?</h2>
-
-        <p className="mt-3 text-gray-500">This action cannot be undone.</p>
-
-        <div className="mt-8 flex justify-end gap-3">
-          <button
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <Button
+            variant="outline"
             onClick={onCancel}
             disabled={loading}
-            className="rounded-xl border px-5 py-2 cursor-pointer"
           >
             Cancel
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="danger"
             onClick={onConfirm}
-            disabled={loading}
-            className="rounded-xl bg-red-600 px-5 py-2 text-white disabled:opacity-60 cursor-pointer"
+            loading={loading}
           >
-            {loading ? "Deleting..." : "Delete"}
-          </button>
+            Delete Expense
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

@@ -1,14 +1,17 @@
 import React from "react";
+import Button from "./Button";
 
-const AuthButton = ({ loading, children, loadingText }) => {
+const AuthButton = ({ children, loading, ...props }) => {
   return (
-    <button
+    <Button
       type="submit"
-      disabled={loading}
-      className="w-full rounded-2xl bg-blue-600 py-3.5 font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+      variant="primary"
+      className="mt-2 w-full text-sm font-semibold"
+      loading={loading}
+      {...props}
     >
-      {loading ? loadingText : children}
-    </button>
+      {children}
+    </Button>
   );
 };
 

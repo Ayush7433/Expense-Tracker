@@ -15,6 +15,7 @@ import {
 import Modal from "../components/common/Modal";
 import ExpenseForm from "../components/expense/ExpenseForm";
 import DeleteConfirmationModal from "../components/common/DeleteConfirmationModal";
+import Button from "../components/common/Button";
 import { useSearchParams } from "react-router-dom";
 import FilterBar from "../components/expense/FilterBar";
 import DateRangeFilter from "../components/expense/DateRangeFilter";
@@ -165,24 +166,26 @@ const Expenses = () => {
           </div>
           <DateRangeFilter />
 
+
           {hasFilters && (
-            <button
+            <Button
+              variant="outline"
+              icon={RotateCcw}
               onClick={resetFilters}
-              className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition hover:bg-gray-50 hover:text-gray-900"
+              className="mt-4"
               title="Reset Filters"
             >
-              <RotateCcw size={18} />
               <span className="hidden sm:inline">Reset</span>
-            </button>
+            </Button>
           )}
 
-          <button
+          <Button
+            icon={Plus}
             onClick={openAddModal}
-            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700 mt-4"
+            className="mt-4"
           >
-            <Plus size={18} />
             Add Expense
-          </button>
+          </Button>
         </div>
       </div>
 

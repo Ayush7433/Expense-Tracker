@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { expenseSchema } from "../../utils/expenseSchema";
 import FormField from "../common/FormField";
+import Button from "../common/Button";
 
 const getTodayDate = () => {
   return new Date().toISOString().split("T")[0];
@@ -121,26 +122,23 @@ const ExpenseForm = ({
         </div>
       </div>
 
+
       <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={onCancel}
-          className="rounded-2xl border border-gray-200 px-5 py-3 font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
         >
           Cancel
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="submit"
-          disabled={loading}
-          className="rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+          variant="primary"
+          loading={loading}
         >
-          {loading
-            ? "Saving..."
-            : initialValues
-              ? "Update Expense"
-              : "Add Expense"}
-        </button>
+          {initialValues ? "Update Expense" : "Add Expense"}
+        </Button>
       </div>
     </form>
   );
