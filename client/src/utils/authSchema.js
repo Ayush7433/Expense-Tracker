@@ -5,7 +5,8 @@ export const loginSchema = z.object({
     .string()
     .trim()
     .min(1, "Email is required")
-    .email("Please enter a valid email address"),
+    .email("Please enter a valid email address")
+    .max(100, "Email must be less than 100 characters"),
   password: z
     .string()
     .trim()
@@ -19,9 +20,14 @@ export const registerSchema = z
       .string()
       .trim()
       .min(1, "Name is required")
-      .min(3, "Name must contain at least 3 characters"),
+      .min(3, "Name must contain at least 3 characters")
+      .max(50, "Name must be less than 50 characters"),
 
-    email: z.email("Please enter a valid email address"),
+    email: z
+      .string()
+      .trim()
+      .email("Please enter a valid email address")
+      .max(100, "Email must be less than 100 characters"),
 
     password: z
       .string()

@@ -26,25 +26,25 @@ const RecentExpenses = ({ expenses = [] }) => {
           {expenses.map((expense) => (
             <div
               key={expense._id}
-              className="flex items-center justify-between rounded-2xl border border-gray-100 px-5 py-4 transition-all hover:border-blue-200 hover:bg-blue-50/40"
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-gray-100 px-4 py-4 sm:px-5 transition-all hover:border-blue-200 hover:bg-blue-50/40 w-full overflow-hidden"
             >
               {/* Left */}
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-xl">
+              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                <div className="flex shrink-0 h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-blue-100 text-lg sm:text-xl">
                   💸
                 </div>
 
-                <div>
-                  <h4 className="font-semibold text-gray-900">
+                <div className="min-w-0 flex-1">
+                  <h4 className="truncate font-semibold text-gray-900" title={expense.title}>
                     {expense.title}
                   </h4>
 
                   <div className="mt-1 flex items-center gap-2">
-                    <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
-                      {expense.category}
+                    <span className="inline-flex max-w-[80px] sm:max-w-[120px] rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700" title={expense.category}>
+                      <span className="truncate">{expense.category}</span>
                     </span>
 
-                    <span className="text-sm text-gray-500">
+                    <span className="truncate text-xs sm:text-sm text-gray-500 hidden sm:block">
                       {formatDate(
                         expense.expenseDate || expense.createdAt
                       )}
@@ -54,8 +54,8 @@ const RecentExpenses = ({ expenses = [] }) => {
               </div>
 
               {/* Right */}
-              <div className="text-right">
-                <p className="text-lg font-bold text-gray-900">
+              <div className="mt-2 sm:mt-0 shrink-0 text-right max-w-[80px] sm:max-w-[90px] sm:ml-2 md:max-w-[150px] lg:max-w-[200px]">
+                <p className="truncate text-base sm:text-lg font-bold text-gray-900" title={formatAmount(expense.amount)}>
                   {formatAmount(expense.amount)}
                 </p>
               </div>

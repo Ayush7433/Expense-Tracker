@@ -21,9 +21,9 @@ const StatsCard = ({ title, value, icon, color = "blue" }) => {
     >
       <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-md">
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-gray-500">{title}</p>
-            <h3 className="mt-2 text-2xl font-bold text-gray-900">{value}</h3>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-gray-500" title={title}>{title}</p>
+            <h3 className="mt-2 truncate max-w-50 text-2xl font-bold text-gray-900" title={String(value)}>{value}</h3>
           </div>
 
           <div

@@ -73,12 +73,12 @@ const ExpenseTable = ({
               expenses.map((expense) => (
                 <tr key={expense._id} className="hover:bg-gray-50/60">
                   <td className="px-6 py-4">
-                    <div>
-                      <p className="font-medium text-gray-900">
+                    <div className="max-w-[200px] sm:max-w-xs md:max-w-sm lg:max-w-md">
+                      <p className="truncate font-medium text-gray-900" title={expense.title}>
                         {expense.title}
                       </p>
                       {expense.description ? (
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 truncate text-sm text-gray-500" title={expense.description}>
                           {expense.description}
                         </p>
                       ) : null}
@@ -92,8 +92,8 @@ const ExpenseTable = ({
                   </td>
 
                   <td className="px-6 py-4">
-                    <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
-                      {expense.category}
+                    <span className="inline-flex max-w-[150px] rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700" title={expense.category}>
+                      <span className="truncate">{expense.category}</span>
                     </span>
                   </td>
 

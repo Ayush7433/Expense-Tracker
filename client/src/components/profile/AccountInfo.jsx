@@ -3,7 +3,7 @@ import { formatDateLong } from "../../utils/formatters";
 
 const AccountInfo = ({ user, totalExpenses = 0 }) => {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-slate-900">
         Account Information
       </h3>
@@ -14,7 +14,7 @@ const AccountInfo = ({ user, totalExpenses = 0 }) => {
             <Mail size={16} />
             Email
           </div>
-          <p className="mt-2 font-semibold text-slate-900">
+          <p className="mt-2 truncate font-semibold text-slate-900" title={user?.email || ''}>
             {user?.email || "Not available"}
           </p>
         </div>

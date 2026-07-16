@@ -53,14 +53,14 @@ const AvatarUploader = ({ user }) => {
   };
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-slate-900">Avatar</h3>
       <p className="mt-1 text-sm text-slate-500">
         Click on the camera icon to upload a new profile picture.
       </p>
 
-      <div className="mt-6 flex items-center gap-4">
-        <div className="relative group">
+      <div className="mt-6 flex min-w-0 items-center gap-4">
+        <div className="group relative">
           <UserAvatar
             avatarUrl={avatarUrl}
             name={name}
@@ -70,7 +70,7 @@ const AvatarUploader = ({ user }) => {
           <button
             onClick={handleCameraClick}
             disabled={isUploading}
-            className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-slate-800 text-white shadow-md transition hover:bg-slate-700 disabled:opacity-50 cursor-pointer"
+            className="absolute bottom-0 right-0 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-slate-800 text-white shadow-md transition hover:bg-slate-700 disabled:opacity-50"
             title="Upload Photo"
           >
             {isUploading ? (
@@ -89,8 +89,8 @@ const AvatarUploader = ({ user }) => {
           />
         </div>
 
-        <div>
-          <p className="font-medium text-slate-900">{name || "User"}</p>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium text-slate-900" title={name || "User"}>{name || "User"}</p>
           <p className="mt-1 text-sm text-slate-500">
             {avatarUrl ? "Custom profile picture" : "Avatar generated from your name initial."}
           </p>
