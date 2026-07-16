@@ -1,6 +1,8 @@
 import { Menu } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import SearchInput from "../common/SearchInput";
+import UserAvatar from "../common/UserAvatar";
 
 const pageMap = {
   "/dashboard": {
@@ -22,12 +24,16 @@ const pageMap = {
 
 const Navbar = ({ onMenuClick }) => {
   const location = useLocation();
+  const { user } = useSelector((state) => state.auth);
 
   const pageInfo = pageMap[location.pathname] || {
     title: "Expense Tracker",
     subtitle: "Manage your finances",
     showSearch: false,
   };
+
+  const name = user?.name || "U";
+  const avatarUrl = user?.avatarUrl || null;
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
@@ -53,6 +59,14 @@ const Navbar = ({ onMenuClick }) => {
             <SearchInput placeholder="Search expenses..." />
           </div>
         )}
+
+        <Link
+          to="/profile"
+          className="ml-2 flex-shrink-0 rounded-full transition hover:ring-2 hover:ring-blue-500 hover:ring-offset-2"
+          title="Go to Profile"
+        >
+          <UserAvatar avatarUrl={avatarUrl} name={name} className="h-10 w-10 text-sm" />
+        </Link>
       </div>
 
       {pageInfo.showSearch && (

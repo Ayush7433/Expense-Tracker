@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Camera, Loader2 } from "lucide-react";
 import { uploadAvatarApi } from "../../redux/services/authApi";
 import { updateUser } from "../../redux/slices/authSlice";
+import UserAvatar from "../common/UserAvatar";
 
 const AvatarUploader = ({ user }) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -12,7 +13,7 @@ const AvatarUploader = ({ user }) => {
 
   const name = user?.name || "";
   const initial = name.charAt(0).toUpperCase() || "U";
-  
+
   // The backend now provides an absolute ImageKit URL
   const avatarUrl = user?.avatarUrl || null;
 
@@ -31,7 +32,7 @@ const AvatarUploader = ({ user }) => {
       formData.append("avatar", file);
 
       const response = await uploadAvatarApi(formData);
-      
+
       if (response.success) {
         dispatch(updateUser(response.user));
         toast.success("Profile picture updated!");
@@ -60,14 +61,12 @@ const AvatarUploader = ({ user }) => {
 
       <div className="mt-6 flex items-center gap-4">
         <div className="relative group">
-          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-3xl font-bold text-white shadow-lg shadow-blue-200">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
-            ) : (
-              initial
-            )}
-          </div>
-          
+          <UserAvatar
+            avatarUrl={avatarUrl}
+            name={name}
+            className="h-20 w-20 text-3xl shadow-lg shadow-blue-200"
+          />
+
           <button
             onClick={handleCameraClick}
             disabled={isUploading}
