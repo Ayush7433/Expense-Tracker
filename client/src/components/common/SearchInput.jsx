@@ -12,6 +12,12 @@ const SearchInput = ({ placeholder = "Search...", debounceDelay = 400 }) => {
   });
 
   const debouncedSearch = useDebounce(search, debounceDelay);
+  const currentSearchParam = searchParams.get("search") || "";
+
+  // Sync internal state if URL param is cleared or changed externally (e.g., Reset button)
+  useEffect(() => {
+    setSearch(currentSearchParam);
+  }, [currentSearchParam]);
 
   // Update URL after debounce
   useEffect(() => {

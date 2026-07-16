@@ -1,13 +1,9 @@
-import { useEffect, useState } from "react";
-
-const CATEGORY_OPTIONS = [
-  { label: "Food", value: "food" },
-  { label: "Travel", value: "travel" },
-  { label: "Shopping", value: "shopping" },
-  { label: "Entertainment", value: "entertainment" },
-  { label: "Bills", value: "bills" },
-  { label: "Other", value: "other" },
-];
+import { useEffect } from "react";
+import { CATEGORY_OPTIONS } from "../../constants/categories";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { expenseSchema } from "../../utils/expenseSchema";
+import FormField from "../common/FormField";
 
 const getTodayDate = () => {
   return new Date().toISOString().split("T")[0];
@@ -19,21 +15,31 @@ const ExpenseForm = ({
   onCancel,
   loading = false,
 }) => {
-  const [formData, setFormData] = useState({
-    title: "",
-    amount: "",
-    category: "",
-    description: "",
-    expenseDate: getTodayDate(),
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(expenseSchema),
+    defaultValues: {
+      title: "",
+      amount: "",
+      category: "",
+      description: "",
+      expenseDate: getTodayDate(),
+    },
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   useEffect(() => {
     if (initialValues) {
-      setFormData({
+      reset({
         title: initialValues.title || "",
         amount:
           initialValues.amount !== undefined && initialValues.amount !== null
-            ? String(initialValues.amount)
+            ? Number(initialValues.amount)
             : "",
         category: initialValues.category || "",
         description: initialValues.description || "",
@@ -42,88 +48,48 @@ const ExpenseForm = ({
           : getTodayDate(),
       });
     }
-  }, [initialValues]);
+  }, [initialValues, reset]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!formData.title.trim()) {
-      return;
-    }
-
-    if (!formData.amount || Number(formData.amount) <= 0) {
-      return;
-    }
-
-    if (!formData.category) {
-      return;
-    }
-
+  const onFormSubmit = (data) => {
     onSubmit({
-      title: formData.title.trim(),
-      amount: Number(formData.amount),
-      category: formData.category,
-      description: formData.description.trim(),
-      expenseDate: formData.expenseDate,
+      title: data.title,
+      amount: data.amount,
+      category: data.category,
+      description: data.description,
+      expenseDate: data.expenseDate,
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5">
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Title
-          </label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
+          <FormField
+            label="Title"
             placeholder="e.g Groceries"
-            className="w-full rounded-2xl border border-gray-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            required
+            error={errors.title?.message}
+            {...register("title")}
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Amount
-          </label>
-          <input
+          <FormField
+            label="Amount"
             type="number"
-            name="amount"
-            value={formData.amount}
-            onChange={handleChange}
             placeholder="0.00"
             min="0.01"
             step="0.01"
-            className="w-full rounded-2xl border border-gray-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            required
+            error={errors.amount?.message}
+            {...register("amount", { valueAsNumber: true })}
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Category
-          </label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            placeholder="0.00"
-            min="0.01"
-            step="0.01"
-            className="w-full rounded-2xl border border-gray-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            required
+          <FormField
+            label="Category"
+            as="select"
+            error={errors.category?.message}
+            {...register("category")}
           >
             <option value="">Select a category</option>
             {CATEGORY_OPTIONS.map((item) => (
@@ -131,34 +97,26 @@ const ExpenseForm = ({
                 {item.label}
               </option>
             ))}
-          </select>
+          </FormField>
         </div>
 
         <div className="sm:col-span-2">
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Expense Date
-          </label>
-          <input
+          <FormField
+            label="Expense Date"
             type="date"
-            name="expenseDate"
-            value={formData.expenseDate}
-            onChange={handleChange}
-            className="w-full rounded-2xl border border-gray-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            required
+            error={errors.expenseDate?.message}
+            {...register("expenseDate")}
           />
         </div>
 
         <div className="sm:col-span-2">
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
+          <FormField
+            label="Description"
+            as="textarea"
             rows="4"
             placeholder="Optional note"
-            className="w-full rounded-2xl border border-gray-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            error={errors.description?.message}
+            {...register("description")}
           />
         </div>
       </div>

@@ -1,7 +1,5 @@
-import { Menu, Search } from "lucide-react";
-import { useSearchParams, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import useDebounce from "../../hooks/useDebounce";
+import { Menu } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import SearchInput from "../common/SearchInput";
 
 const pageMap = {

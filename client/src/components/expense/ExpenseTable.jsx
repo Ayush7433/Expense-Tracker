@@ -1,23 +1,6 @@
 import { PencilLine, Trash2 } from "lucide-react";
 import Loader from "../common/Loader";
-
-const formatDate = (dateValue) => {
-  if (!dateValue) return "--";
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(dateValue));
-};
-
-const formatAmount = (amount) => {
-  const value = Number(amount || 0).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-
-  return `₹${value}`;
-};
+import { formatDate, formatAmount } from "../../utils/formatters";
 
 const ExpenseTable = ({
   expenses = [],

@@ -1,35 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-
-const categories = [
-  {
-    label: "All Categories",
-    value: "",
-  },
-  {
-    label: "Food",
-    value: "food",
-  },
-  {
-    label: "Travel",
-    value: "travel",
-  },
-  {
-    label: "Shopping",
-    value: "shopping",
-  },
-  {
-    label: "Bills",
-    value: "bills",
-  },
-  {
-    label: "Entertainment",
-    value: "entertainment",
-  },
-  {
-    label: "Other",
-    value: "other",
-  },
-];
+import { CATEGORY_FILTER_OPTIONS } from "../../constants/categories";
 
 const FilterBar = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -59,7 +29,7 @@ const FilterBar = () => {
       onChange={handleChange}
       className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
     >
-      {categories.map((category) => (
+      {CATEGORY_FILTER_OPTIONS.map((category) => (
         <option key={category.value} value={category.value}>
           {category.label}
         </option>

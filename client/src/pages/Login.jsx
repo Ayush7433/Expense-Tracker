@@ -6,7 +6,6 @@ import {
   loginFailure,
 } from "../redux/slices/authSlice";
 import { loginUserApi } from "../redux/services/authApi";
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import loginImage from "../assets/login.jpeg";
 import AuthLayout from "../layouts/AuthLayout";
@@ -30,15 +29,6 @@ const Login = () => {
     mode: "onChange",
     reValidateMode: "onChange",
   });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
   const onSubmit = async (data) => {
 

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
-import { Funnel, Plus, RefreshCw } from "lucide-react";
+import { Plus, RotateCcw } from "lucide-react";
 import { fetchExpenses } from "../redux/slices/expenseSlice";
 import ExpenseTable from "../components/expense/ExpenseTable";
 import Loader from "../components/common/Loader";
+import PageHeader from "../components/common/PageHeader";
+import ErrorBanner from "../components/common/ErrorBanner";
 import {
   createExpenseApi,
   deleteExpenseApi,
@@ -31,13 +33,19 @@ const Expenses = () => {
   const [deleteOpenModal, setDeleteOpenModal] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const search = searchParams.get("search") || "";
   const page = Number(searchParams.get("page")) || 1;
   const category = searchParams.get("category") || "";
   const startDate = searchParams.get("startDate") || "";
   const endDate = searchParams.get("endDate") || "";
+
+  const hasFilters = Boolean(search || category || startDate || endDate);
+
+  const resetFilters = () => {
+    setSearchParams({});
+  };
 
   useEffect(() => {
     dispatch(
@@ -143,13 +151,10 @@ const Expenses = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white px-6 py-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Expenses</h1>
-
-          <p className="mt-2 text-sm text-gray-500">
-            Track and manage your recorded expenses.
-          </p>
-        </div>
+        <PageHeader
+          title="Expenses"
+          subtitle="Track and manage your recorded expenses."
+        />
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-col gap-1">
@@ -159,6 +164,17 @@ const Expenses = () => {
             <FilterBar />
           </div>
           <DateRangeFilter />
+
+          {hasFilters && (
+            <button
+              onClick={resetFilters}
+              className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition hover:bg-gray-50 hover:text-gray-900"
+              title="Reset Filters"
+            >
+              <RotateCcw size={18} />
+              <span className="hidden sm:inline">Reset</span>
+            </button>
+          )}
 
           <button
             onClick={openAddModal}
@@ -171,17 +187,7 @@ const Expenses = () => {
       </div>
 
       {error ? (
-        <div className="flex flex-col gap-3 rounded-3xl border border-red-200 bg-red-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-medium text-red-700">{error}</p>
-          <button
-            type="button"
-            onClick={handleRetry}
-            className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-          >
-            <RefreshCw size={16} />
-            Retry
-          </button>
-        </div>
+        <ErrorBanner message={error} onRetry={handleRetry} />
       ) : null}
 
       {loading && expenses.length === 0 ? (

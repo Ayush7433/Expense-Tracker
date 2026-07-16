@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDashboardData } from "../redux/slices/dashboardSlice";
+import { formatAmountShort } from "../utils/formatters";
 import Loader from "../components/common/Loader";
+import PageHeader from "../components/common/PageHeader";
 import StatsCard from "../components/dashboard/StatsCard";
 import {
   Calculator,
@@ -29,13 +31,10 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-
-        <p className="mt-2 text-sm text-gray-500">
-          Overview of your expenses and financial activity
-        </p>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Overview of your expenses and financial activity"
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatsCard
@@ -47,7 +46,7 @@ const Dashboard = () => {
 
         <StatsCard
           title="Total Amount"
-          value={`₹${Number(dashboard.totalAmount || 0).toLocaleString("en-IN")}`}
+          value={formatAmountShort(dashboard.totalAmount)}
           icon={<DollarSign size={22} />}
           color="green"
         />
@@ -61,21 +60,21 @@ const Dashboard = () => {
 
         <StatsCard
           title="Highest Expense"
-          value={`₹${Number(dashboard.highestExpense || 0).toLocaleString("en-IN")}`}
+          value={formatAmountShort(dashboard.highestExpense)}
           icon={<ArrowUpRight size={22} />}
           color="orange"
         />
 
         <StatsCard
           title="Lowest Expense"
-          value={`₹${Number(dashboard.lowestExpense || 0).toLocaleString("en-IN")}`}
+          value={formatAmountShort(dashboard.lowestExpense)}
           icon={<ArrowDownRight size={22} />}
           color="red"
         />
 
         <StatsCard
           title="This Month Expense"
-          value={`₹${Number(dashboard.thisMonthExpense || 0).toLocaleString("en-IN")}`}
+          value={formatAmountShort(dashboard.thisMonthExpense)}
           icon={<CalendarDays size={22} />}
           color="blue"
         />

@@ -1,12 +1,4 @@
-const formatDate = (dateValue) => {
-  if (!dateValue) return "--";
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(dateValue));
-};
+import { formatDate, formatAmount } from "../../utils/formatters";
 
 const RecentExpenses = ({ expenses = [] }) => {
   return (
@@ -64,8 +56,7 @@ const RecentExpenses = ({ expenses = [] }) => {
               {/* Right */}
               <div className="text-right">
                 <p className="text-lg font-bold text-gray-900">
-                  ₹
-                  {Number(expense.amount).toLocaleString("en-IN")}
+                  {formatAmount(expense.amount)}
                 </p>
               </div>
             </div>

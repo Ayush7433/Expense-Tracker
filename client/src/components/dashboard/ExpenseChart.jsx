@@ -6,8 +6,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import EmptyChart from "../common/EmptyChart";
-import { motion } from "framer-motion";
+import ChartCard from "../common/ChartCard";
 
 const COLORS = [
   "#3B82F6",
@@ -34,51 +33,31 @@ const ExpenseChart = ({ expenses = [] }) => {
   }));
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{
-        y: -4,
-        scale: 1.01,
-      }}
-      transition={{
-        duration: 0.4,
-        ease: "easeOut",
-      }}
-      className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-xl"
+    <ChartCard
+      title="Expenses by category"
+      isEmpty={expenses.length === 0}
+      emptyTitle="No category data"
+      emptyDescription="Your category breakdown will appear here after you add expenses."
     >
-      <h3 className="text-lg font-semibold text-gray-900">
-        Expenses by category
-      </h3>
-
-      {expenses.length > 0 ? (
-        <div className="mt-6 h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius={65}
-                outerRadius={110}
-                paddingAngle={4}
-              >
-                {chartData.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      ) : (
-        <EmptyChart
-          title="No category data"
-          description="Your category breakdown will appear here after you add expenses."
-        />
-      )}
-    </motion.div>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={chartData}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={65}
+            outerRadius={110}
+            paddingAngle={4}
+          >
+            {chartData.map((_, index) => (
+              <Cell key={index} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </ChartCard>
   );
 };
 

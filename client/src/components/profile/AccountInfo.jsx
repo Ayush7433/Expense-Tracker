@@ -1,14 +1,5 @@
 import { CalendarDays, ReceiptText, Mail } from "lucide-react";
-
-const formatDate = (dateValue) => {
-  if (!dateValue) return "Not available";
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(dateValue));
-};
+import { formatDateLong } from "../../utils/formatters";
 
 const AccountInfo = ({ user, totalExpenses = 0 }) => {
   return (
@@ -34,7 +25,7 @@ const AccountInfo = ({ user, totalExpenses = 0 }) => {
             Member Since
           </div>
           <p className="mt-2 font-semibold text-slate-900">
-            {formatDate(user?.createdAt)}
+            {formatDateLong(user?.createdAt)}
           </p>
         </div>
 

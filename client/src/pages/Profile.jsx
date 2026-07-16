@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import PageHeader from "../components/common/PageHeader";
 import ProfileCard from "../components/profile/ProfileCard";
 import AccountInfo from "../components/profile/AccountInfo";
 import SecuritySettings from "../components/profile/SecuritySettings";
@@ -9,12 +10,10 @@ const Profile = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900">Profile</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          View your account details and session status.
-        </p>
-      </div>
+      <PageHeader
+        title="Profile"
+        subtitle="View your account details and session status."
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1">
