@@ -6,8 +6,8 @@ body {
   max-width: 100%;
 }
 
-/* Ensure all flex children can shrink below content size */
-* {
+/* Ensure flex/grid children can shrink below their content size for truncation to work */
+:where(div, span, p, h1, h2, h3, h4, h5, h6, li, a, button, label) {
   min-width: 0;
 }
 
