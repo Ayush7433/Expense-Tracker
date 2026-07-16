@@ -37,7 +37,7 @@ const Button = forwardRef(
         ref={ref}
         type={type}
         disabled={disabled || loading}
-        className={`inline-flex items-center justify-center gap-2 rounded-2xl transition-all disabled:cursor-not-allowed disabled:opacity-70 ${variants[variant]} ${sizes[size]} ${className}`}
+        className={`inline-flex items-center justify-center gap-2 rounded-2xl transition-all disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer ${variants[variant]} ${sizes[size]} ${className}`}
         {...props}
       >
         {loading && <Loader2 className="animate-spin" size={18} />}

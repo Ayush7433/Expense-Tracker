@@ -5,12 +5,18 @@ const app = express();
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const expenseRoutes = require('./routes/expenseRoutes');
+const userRoutes = require("./routes/userRoutes");
+const path = require("path");
 
 app.use(express.json());
 app.use(cors());
 
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/expenses", expenseRoutes);
+app.use("/api/users", userRoutes);
 
 connectDB();
 

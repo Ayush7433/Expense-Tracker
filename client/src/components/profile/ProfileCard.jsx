@@ -3,7 +3,7 @@ import AvatarUploader from "./AvatarUploader";
 const ProfileCard = ({ user }) => {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <AvatarUploader name={user?.name} />
+      <AvatarUploader user={user} />
 
       <div className="mt-6 rounded-2xl bg-slate-50 p-5">
         <h3 className="text-lg font-semibold text-slate-900">Profile Details</h3>
