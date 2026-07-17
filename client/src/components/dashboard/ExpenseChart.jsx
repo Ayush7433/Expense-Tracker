@@ -7,6 +7,7 @@ import {
   Legend,
 } from "recharts";
 import ChartCard from "../common/ChartCard";
+import { useSelector } from "react-redux";
 
 const COLORS = [
   "#3B82F6",
@@ -18,6 +19,7 @@ const COLORS = [
 ];
 
 const ExpenseChart = ({ expenses = [] }) => {
+  const isDark = useSelector((state) => state.theme.mode === "dark");
   const categoryMap = {};
 
   expenses.forEach((expense) => {
@@ -53,8 +55,15 @@ const ExpenseChart = ({ expenses = [] }) => {
               <Cell key={index} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip />
-          <Legend />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: isDark ? "#1e293b" : "#ffffff",
+              border: `1px solid ${isDark ? "#334155" : "#e5e7eb"}`,
+              borderRadius: "12px",
+              color: isDark ? "#f1f5f9" : "#111827",
+            }}
+          />
+          <Legend wrapperStyle={{ color: isDark ? "#cbd5e1" : "#374151" }} />
         </PieChart>
       </ResponsiveContainer>
     </ChartCard>
