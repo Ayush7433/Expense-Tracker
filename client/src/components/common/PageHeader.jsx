@@ -5,10 +5,14 @@
 const PageHeader = ({ title, subtitle, children }) => {
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        {title}
+      </h1>
 
       {subtitle && (
-        <p className="mt-2 text-sm text-gray-500">{subtitle}</p>
+        <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+          {subtitle}
+        </p>
       )}
 
       {children}

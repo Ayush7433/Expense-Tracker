@@ -34,9 +34,11 @@ const ChartCard = ({
         ease: "easeOut",
         delay,
       }}
-      className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-xl"
+      className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
     >
-      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        {title}
+      </h3>
 
       {isEmpty ? (
         <EmptyChart title={emptyTitle} description={emptyDescription} />
