@@ -1,12 +1,15 @@
 import React from "react";
 import logo from "../../assets/Logo.png";
+import logoDark from "../../assets/Logo_Dark.png";
 import { House, LogOut, NotebookText, UserRound } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/slices/authSlice";
 
 const Sidebar = ({ open, onClose }) => {
   const dispatch = useDispatch();
+  const themeMode = useSelector((state) => state.theme.mode);
+  const logoSrc = themeMode === "dark" ? logoDark : logo;
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-medium transition-all duration-200 ${
@@ -37,9 +40,9 @@ const Sidebar = ({ open, onClose }) => {
         <div className="flex h-full flex-col px-4 py-5">
           <div className="flex flex-1 flex-col overflow-hidden">
             <div className="flex items-center gap-3 px-2 pb-6">
-              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-blue-600 shadow-md shadow-blue-200">
+              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-blue-600 shadow-md shadow-blue-200 dark:shadow-slate-950/50">
                 <img
-                  src={logo}
+                  src={logoSrc}
                   alt="Expense Tracker Logo"
                   className="h-full w-full object-cover"
                 />

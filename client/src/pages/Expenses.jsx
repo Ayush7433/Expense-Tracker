@@ -151,7 +151,7 @@ const Expenses = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white px-6 py-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white px-6 py-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:flex-row lg:items-center lg:justify-between">
         <PageHeader
           title="Expenses"
           subtitle="Track and manage your recorded expenses."
@@ -159,13 +159,12 @@ const Expenses = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-slate-500">
+            <label className="text-xs font-medium text-slate-500 dark:text-slate-400">
               Categories
             </label>
             <FilterBar />
           </div>
           <DateRangeFilter />
-
 
           {hasFilters && (
             <Button
@@ -179,19 +178,13 @@ const Expenses = () => {
             </Button>
           )}
 
-          <Button
-            icon={Plus}
-            onClick={openAddModal}
-            className="mt-4"
-          >
+          <Button icon={Plus} onClick={openAddModal} className="mt-4">
             Add Expense
           </Button>
         </div>
       </div>
 
-      {error ? (
-        <ErrorBanner message={error} onRetry={handleRetry} />
-      ) : null}
+      {error ? <ErrorBanner message={error} onRetry={handleRetry} /> : null}
 
       {loading && expenses.length === 0 ? (
         <Loader message="Loading expenses..." />
