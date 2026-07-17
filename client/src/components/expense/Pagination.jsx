@@ -26,14 +26,14 @@ const Pagination = ({ currentPage, totalPages }) => {
   };
 
   return (
-    <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row">
-      <p className="text-sm text-slate-500">
+    <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row">
+      <p className="text-sm text-slate-500 dark:text-slate-400">
         Page{" "}
-        <span className="font-semibold text-slate-900">
+        <span className="font-semibold text-slate-900 dark:text-white">
           {currentPage}
         </span>{" "}
         of{" "}
-        <span className="font-semibold text-slate-900">
+        <span className="font-semibold text-slate-900 dark:text-white">
           {totalPages}
         </span>
       </p>
@@ -42,7 +42,7 @@ const Pagination = ({ currentPage, totalPages }) => {
         <button
           disabled={currentPage === 1}
           onClick={() => changePage(currentPage - 1)}
-          className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ChevronLeft size={16} />
           Previous
@@ -55,7 +55,7 @@ const Pagination = ({ currentPage, totalPages }) => {
             className={`h-10 w-10 rounded-xl text-sm font-semibold transition ${
               currentPage === page
                 ? "bg-blue-600 text-white"
-                : "border border-slate-200 hover:bg-slate-100"
+                : "border border-slate-200 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
             }`}
           >
             {page}
@@ -65,7 +65,7 @@ const Pagination = ({ currentPage, totalPages }) => {
         <button
           disabled={currentPage === totalPages}
           onClick={() => changePage(currentPage + 1)}
-          className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Next
           <ChevronRight size={16} />
