@@ -8,6 +8,7 @@ import {
 import { loginUserApi } from "../redux/services/authApi";
 import { Link, useNavigate } from "react-router-dom";
 import loginImage from "../assets/login.jpeg";
+import loginImageDark from "../assets/Auth_Dark.png";
 import AuthLayout from "../layouts/AuthLayout";
 import FormField from "../components/common/FormField";
 import AuthButton from "../components/common/AuthButton";
@@ -19,6 +20,7 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading } = useSelector((state) => state.auth);
+  const themeMode = useSelector((state) => state.theme.mode);
 
   const {
     register,
@@ -31,7 +33,6 @@ const Login = () => {
   });
 
   const onSubmit = async (data) => {
-
     dispatch(loginStart());
 
     try {
@@ -57,7 +58,7 @@ const Login = () => {
 
   return (
     <AuthLayout
-      image={loginImage}
+      image={themeMode === "dark" ? loginImageDark : loginImage}
       title="Welcome Back"
       subtitle="Login to continue to your dashboard"
     >
@@ -82,7 +83,7 @@ const Login = () => {
           Login
         </AuthButton>
 
-        <p className="text-center text-sm text-gray-500">
+        <p className="text-center text-sm text-gray-500 dark:text-slate-400">
           Don&apos;t have an account?{" "}
           <Link to="/register" className="font-medium text-blue-600">
             Sign up

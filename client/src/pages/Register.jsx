@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { registerUserApi } from "../redux/services/authApi";
 import loginImage from "../assets/login.jpeg";
+import loginImageDark from "../assets/Auth_Dark.png";
 import AuthLayout from "../layouts/AuthLayout";
 import FormField from "../components/common/FormField";
 import AuthButton from "../components/common/AuthButton";
@@ -10,9 +11,11 @@ import AuthButton from "../components/common/AuthButton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "../utils/authSchema";
+import { useSelector } from "react-redux";
 
 const Register = () => {
   const navigate = useNavigate();
+  const themeMode = useSelector((state) => state.theme.mode);
 
   const {
     register,
@@ -41,7 +44,7 @@ const Register = () => {
 
   return (
     <AuthLayout
-      image={loginImage}
+      image={themeMode === "dark" ? loginImageDark : loginImage}
       title="Create Account"
       subtitle="Start tracking your expenses"
     >
@@ -82,7 +85,7 @@ const Register = () => {
           Create Account
         </AuthButton>
 
-        <p className="text-center text-sm text-gray-500">
+        <p className="text-center text-sm text-gray-500 dark:text-slate-400">
           Already have an account?{" "}
           <Link to="/login" className="font-medium text-blue-600">
             Login

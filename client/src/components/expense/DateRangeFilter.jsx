@@ -25,7 +25,7 @@ const DateRangeFilter = () => {
   return (
     <div className="flex flex-col gap-3 sm:flex-row">
       <div className="flex flex-col">
-        <label className="mb-1 text-xs font-medium text-slate-500">
+        <label className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
           Start Date
         </label>
         <input
@@ -33,12 +33,12 @@ const DateRangeFilter = () => {
           name="startDate"
           value={startDate}
           onChange={handleChange}
-          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950 dark:[color-scheme:dark]"
         />
       </div>
 
       <div className="flex flex-col">
-        <label className="mb-1 text-xs font-medium text-slate-500">
+        <label className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
           End Date
         </label>
         <input
@@ -46,7 +46,7 @@ const DateRangeFilter = () => {
           name="endDate"
           value={endDate}
           onChange={handleChange}
-          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950 dark:[color-scheme:dark]"
         />
       </div>
     </div>
