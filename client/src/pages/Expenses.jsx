@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { Plus, RotateCcw } from "lucide-react";
 import { fetchExpenses } from "../redux/slices/expenseSlice";
+import { fetchBudgetStatus } from "../redux/slices/budgetSlice";
 import ExpenseTable from "../components/expense/ExpenseTable";
 import Loader from "../components/common/Loader";
 import PageHeader from "../components/common/PageHeader";
@@ -97,22 +98,38 @@ const Expenses = () => {
     setDeleteOpenModal(false);
   };
 
-  const handleSubmit = async (formData) => {
+  const handleSubmit = async (formData, meta = {}) => {
     try {
       setFormLoading(true);
 
       if (selectedExpense?._id) {
         await updateExpenseApi(selectedExpense._id, formData);
-        toast.success("Expense updated successfully");
+        if (meta.overBudget) {
+          toast.warning(
+            meta.messages?.[0] || "Expense updated — you're over budget",
+          );
+        } else {
+          toast.success("Expense updated successfully");
+        }
       } else {
         await createExpenseApi(formData);
-        toast.success("Expense created successfully");
+        if (meta.overBudget) {
+          toast.warning(
+            meta.messages?.[0] || "Expense saved — you're over budget",
+          );
+        } else {
+          toast.success("Expense created successfully");
+        }
       }
 
       setIsModalOpen(false);
       setSelectedExpense(null);
 
       dispatch(fetchExpenses({ page: 1, limit: 10 }));
+      const expenseMonth = (
+        formData.expenseDate || new Date().toISOString()
+      ).slice(0, 7);
+      dispatch(fetchBudgetStatus(expenseMonth));
     } catch (error) {
       const message =
         error.response?.data?.message ||
@@ -138,6 +155,12 @@ const Expenses = () => {
           limit: 10,
         }),
       );
+      const deletedMonth = (
+        expenseToDelete?.expenseDate ||
+        expenseToDelete?.createdAt ||
+        new Date().toISOString()
+      ).slice(0, 7);
+      dispatch(fetchBudgetStatus(deletedMonth));
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to delete expense");
     } finally {

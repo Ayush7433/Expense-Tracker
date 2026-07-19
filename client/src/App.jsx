@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Expenses from "./pages/Expenses";
 import Profile from "./pages/Profile";
+import Budgets from "./pages/Budgets";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 
@@ -19,6 +20,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/budgets" element={<Budgets />} />
         </Route>
       </Route>
     </Routes>

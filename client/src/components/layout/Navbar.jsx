@@ -21,6 +21,11 @@ const pageMap = {
     subtitle: "Manage your account details",
     showSearch: false,
   },
+  "/budgets": {
+    title: "Budgets",
+    subtitle: "Set and track your monthly spending limits",
+    showSearch: false,
+  },
 };
 
 const Navbar = ({ onMenuClick }) => {
@@ -68,7 +73,11 @@ const Navbar = ({ onMenuClick }) => {
           className="ml-2 flex-shrink-0 rounded-full transition hover:ring-2 hover:ring-offset-2 dark:hover:ring-offset-slate-900 hover:ring-blue-500"
           title="Go to Profile"
         >
-          <UserAvatar avatarUrl={avatarUrl} name={name} className="h-10 w-10 text-sm" />
+          <UserAvatar
+            avatarUrl={avatarUrl}
+            name={name}
+            className="h-10 w-10 text-sm"
+          />
         </Link>
       </div>
 

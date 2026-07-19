@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDashboardData } from "../redux/slices/dashboardSlice";
+import { fetchBudgetStatus } from "../redux/slices/budgetSlice";
 import { formatAmountShort } from "../utils/formatters";
 import Loader from "../components/common/Loader";
 import PageHeader from "../components/common/PageHeader";
@@ -16,13 +17,20 @@ import {
 import ExpenseChart from "../components/dashboard/ExpenseChart";
 import MonthlyExpenseChart from "../components/dashboard/MonthlyExpenseChart";
 import RecentExpenses from "../components/dashboard/RecentExpenses";
+import BudgetHealth from "../components/dashboard/BudgetHealth";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.dashboard);
+  const { overall, categories: budgetCategories } = useSelector(
+    (state) => state.budget,
+  );
 
   useEffect(() => {
     dispatch(fetchDashboardData());
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    dispatch(fetchBudgetStatus(currentMonth));
   }, [dispatch]);
 
   if (dashboard.loading && dashboard.recentExpenses.length === 0) {
@@ -79,6 +87,8 @@ const Dashboard = () => {
           color="blue"
         />
       </div>
+
+      <BudgetHealth overall={overall} categories={budgetCategories} />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <ExpenseChart expenses={dashboard.chartExpenses} />
