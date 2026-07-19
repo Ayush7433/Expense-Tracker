@@ -1,7 +1,7 @@
 import React from "react";
 import logo from "../../assets/Logo.png";
 import logoDark from "../../assets/Logo_Dark.png";
-import { House, LogOut, NotebookText, UserRound } from "lucide-react";
+import { House, LogOut, NotebookText, UserRound, Wallet } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/slices/authSlice";
@@ -67,6 +67,11 @@ const Sidebar = ({ open, onClose }) => {
               <NavLink to="/expenses" className={linkClass} onClick={onClose}>
                 <NotebookText size={18} />
                 Expenses
+              </NavLink>
+
+              <NavLink to="/budgets" className={linkClass} onClick={onClose}>
+                <Wallet size={18} />
+                Budgets
               </NavLink>
 
               <NavLink to="/profile" className={linkClass} onClick={onClose}>
