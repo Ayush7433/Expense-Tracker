@@ -27,7 +27,7 @@ const createExpense = async (req, res) => {
       expense,
     });
   } catch (error) {
-    res.staus(501).json({
+    res.status(500).json({
       success: false,
       message: "Error creating expense",
     });
@@ -87,14 +87,14 @@ const getExpenses = async (req, res) => {
       .skip(skip)
       .limit(Number(limit));
 
-      const totalExpenses = await Expense.countDocuments(query);
+    const totalExpenses = await Expense.countDocuments(query);
 
     res.status(200).json({
       success: true,
       count: expenses.length,
       totalExpenses,
-      currentPage : Number(page),
-      totalPages : Math.ceil(totalExpenses / limit),
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalExpenses / limit),
       expenses,
     });
   } catch (error) {
@@ -172,6 +172,7 @@ const getDashboardStats = async (req, res) => {
   try {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
     const stats = await Expense.aggregate([
       {
@@ -201,7 +202,10 @@ const getDashboardStats = async (req, res) => {
             $sum: {
               $cond: [
                 {
-                  $gte: ["$expenseDate", startOfMonth],
+                  $and: [
+                    { $gte: ["$expenseDate", startOfMonth] },
+                    { $lt: ["$expenseDate", endOfMonth] },
+                  ],
                 },
                 "$amount",
                 0,
@@ -221,9 +225,36 @@ const getDashboardStats = async (req, res) => {
       thisMonthExpense: 0,
     };
 
+    const categoryBreakdown = await Expense.aggregate([
+      { $match: { user: req.user._id } },
+      { $group: { _id: "$category", total: { $sum: "$amount" } } },
+      { $project: { _id: 0, category: "$_id", total: 1 } },
+    ]);
+
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+    const monthlyBreakdown = await Expense.aggregate([
+      {
+        $match: {
+          user: req.user._id,
+          expenseDate: { $gte: twelveMonthsAgo },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$expenseDate" } },
+          total: { $sum: "$amount" },
+        },
+      },
+      { $sort: { _id: 1 } },
+      { $project: { _id: 0, month: "$_id", total: 1 } },
+    ]);
+
     res.status(200).json({
       success: true,
       stats: dashboardStats,
+      categoryBreakdown,
+      monthlyBreakdown,
     });
   } catch (error) {
     res.status(500).json({

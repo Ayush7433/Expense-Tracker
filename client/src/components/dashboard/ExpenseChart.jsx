@@ -6,8 +6,8 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import ChartCard from "../common/ChartCard";
 import { useSelector } from "react-redux";
+import ChartCard from "../common/ChartCard";
 
 const COLORS = [
   "#3B82F6",
@@ -18,26 +18,18 @@ const COLORS = [
   "#64748B",
 ];
 
-const ExpenseChart = ({ expenses = [] }) => {
+const ExpenseChart = ({ data = [] }) => {
   const isDark = useSelector((state) => state.theme.mode === "dark");
-  const categoryMap = {};
 
-  expenses.forEach((expense) => {
-    const category = expense.category || "other";
-    const amount = Number(expense.amount || 0);
-
-    categoryMap[category] = (categoryMap[category] || 0) + amount;
-  });
-
-  const chartData = Object.entries(categoryMap).map(([name, value]) => ({
-    name,
-    value,
+  const chartData = data.map((item) => ({
+    name: item.category,
+    value: item.total,
   }));
 
   return (
     <ChartCard
       title="Expenses by category"
-      isEmpty={expenses.length === 0}
+      isEmpty={chartData.length === 0}
       emptyTitle="No category data"
       emptyDescription="Your category breakdown will appear here after you add expenses."
     >

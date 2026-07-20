@@ -91,8 +91,8 @@ const Dashboard = () => {
       <BudgetHealth overall={overall} categories={budgetCategories} />
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <ExpenseChart expenses={dashboard.chartExpenses} />
-        <MonthlyExpenseChart expenses={dashboard.chartExpenses} />
+        <ExpenseChart data={dashboard.categoryBreakdown} />
+        <MonthlyExpenseChart data={dashboard.monthlyBreakdown} />
       </div>
 
       <RecentExpenses expenses={dashboard.recentExpenses} />
