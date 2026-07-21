@@ -23,7 +23,7 @@ const DateRangeFilter = () => {
   };
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row">
+    <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
       <div className="flex flex-col">
         <label className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
           Start Date

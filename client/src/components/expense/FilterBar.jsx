@@ -27,7 +27,7 @@ const FilterBar = () => {
     <select
       value={selectedCategory}
       onChange={handleChange}
-      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950"
+      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950 sm:w-44"
     >
       {CATEGORY_FILTER_OPTIONS.map((category) => (
         <option key={category.value} value={category.value}>
