@@ -21,6 +21,8 @@ import { useSearchParams } from "react-router-dom";
 import FilterBar from "../components/expense/FilterBar";
 import DateRangeFilter from "../components/expense/DateRangeFilter";
 import Pagination from "../components/expense/Pagination";
+import ExportModal from "../components/expense/ExportModal";
+import { Download } from "lucide-react";
 
 const Expenses = () => {
   const dispatch = useDispatch();
@@ -36,6 +38,7 @@ const Expenses = () => {
   const [expenseToDelete, setExpenseToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const search = searchParams.get("search") || "";
   const page = Number(searchParams.get("page")) || 1;
@@ -174,36 +177,56 @@ const Expenses = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white px-6 py-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:flex-row lg:items-center lg:justify-between">
-        <PageHeader
-          title="Expenses"
-          subtitle="Track and manage your recorded expenses."
-        />
+      <div className="space-y-4">
+        <div className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white px-6 py-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+          <PageHeader
+            title="Expenses"
+            subtitle="Track and manage your recorded expenses."
+          />
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              Categories
-            </label>
-            <FilterBar />
-          </div>
-          <DateRangeFilter />
-
-          {hasFilters && (
+          <div className="flex gap-3">
             <Button
               variant="outline"
-              icon={RotateCcw}
-              onClick={resetFilters}
-              className="mt-4"
-              title="Reset Filters"
+              icon={Download}
+              onClick={() => setIsExportModalOpen(true)}
+              className="flex-1 sm:flex-none"
             >
-              <span className="hidden sm:inline">Reset</span>
+              Export
             </Button>
-          )}
 
-          <Button icon={Plus} onClick={openAddModal} className="mt-4">
-            Add Expense
-          </Button>
+            <Button
+              icon={Plus}
+              onClick={openAddModal}
+              className="flex-1 sm:flex-none"
+            >
+              Add Expense
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-gray-100 bg-white px-6 py-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Categories
+              </label>
+              <FilterBar />
+            </div>
+
+            <DateRangeFilter />
+
+            {hasFilters && (
+              <Button
+                variant="outline"
+                icon={RotateCcw}
+                onClick={resetFilters}
+                title="Reset Filters"
+                className="w-full sm:w-auto"
+              >
+                Reset
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -246,6 +269,18 @@ const Expenses = () => {
         onCancel={closeDeleteModal}
         onConfirm={handleDeleteExpense}
       />
+
+      <Modal
+        open={isExportModalOpen}
+        title="Export Expenses"
+        onClose={() => setIsExportModalOpen(false)}
+      >
+        <ExportModal
+          activeFilters={{ search, category, startDate, endDate }}
+          hasActiveFilters={hasFilters}
+          onClose={() => setIsExportModalOpen(false)}
+        />
+      </Modal>
     </div>
   );
 };

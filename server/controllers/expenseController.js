@@ -1,5 +1,30 @@
 const Expense = require("../models/Expense");
 
+const buildExpenseQuery = (
+  userId,
+  { search, category, startDate, endDate },
+) => {
+  const query = { user: userId };
+
+  if (search) {
+    query.title = { $regex: search, $options: "i" };
+  }
+
+  if (category) {
+    query.category = category;
+  }
+
+  if (startDate || endDate) {
+    query.expenseDate = {};
+    if (startDate) query.expenseDate.$gte = new Date(startDate);
+    if (endDate) query.expenseDate.$lte = new Date(endDate);
+  }
+
+  return query;
+};
+
+const EXPORT_LIMIT = 5000;
+
 const createExpense = async (req, res) => {
   try {
     const { title, amount, category, description, expenseDate } = req.body;
@@ -47,36 +72,12 @@ const getExpenses = async (req, res) => {
       limit = 10,
     } = req.query;
 
-    //Base query
-    const query = {
-      user: user._id,
-    };
-
-    //Search by title
-    if (search) {
-      query.title = {
-        $regex: search,
-        $options: "i",
-      };
-    }
-
-    //filter by category
-    if (category) {
-      query.category = category;
-    }
-
-    //filter by date range
-    if (startDate || endDate) {
-      query.expenseDate = {};
-
-      if (startDate) {
-        query.expenseDate.$gte = new Date(startDate);
-      }
-
-      if (endDate) {
-        query.expenseDate.$lte = new Date(endDate);
-      }
-    }
+    const query = buildExpenseQuery(user._id, {
+      search,
+      category,
+      startDate,
+      endDate,
+    });
 
     const skip = (page - 1) * limit;
 
@@ -264,10 +265,101 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+const exportExpenses = async (req, res) => {
+  try {
+    const user = req.user;
+    const { search, category, startDate, endDate, format } = req.query;
+
+    const query = buildExpenseQuery(user._id, {
+      search,
+      category,
+      startDate,
+      endDate,
+    });
+
+    const expenses = await Expense.find(query)
+      .sort({ expenseDate: -1 })
+      .limit(EXPORT_LIMIT);
+
+    const summaryAgg = await Expense.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$amount" },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const categoryBreakdown = await Expense.aggregate([
+      { $match: query },
+      { $group: { _id: "$category", total: { $sum: "$amount" } } },
+      { $project: { _id: 0, category: "$_id", total: 1 } },
+    ]);
+
+    const summary = {
+      totalAmount: summaryAgg[0]?.totalAmount || 0,
+      count: summaryAgg[0]?.count || 0,
+      categoryBreakdown,
+    };
+
+    if (format === "csv") {
+      const header = ["Title", "Amount", "Category", "Date", "Description"];
+
+      const escapeCsvValue = (value) => {
+        const stringValue =
+          value === undefined || value === null ? "" : String(value);
+        if (/[",\n]/.test(stringValue)) {
+          return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+        return stringValue;
+      };
+
+      const rows = expenses.map((expense) =>
+        [
+          expense.title,
+          expense.amount,
+          expense.category,
+          expense.expenseDate
+            ? expense.expenseDate.toISOString().split("T")[0]
+            : "",
+          expense.description || "",
+        ]
+          .map(escapeCsvValue)
+          .join(","),
+      );
+
+      const csvContent = [header.join(","), ...rows].join("\n");
+      const filename = `expenses-export-${new Date().toISOString().split("T")[0]}.csv`;
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
+
+      return res.status(200).send(csvContent);
+    }
+
+    res.status(200).json({
+      success: true,
+      expenses,
+      summary,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error exporting expenses",
+    });
+  }
+};
+
 module.exports = {
   createExpense,
   getExpenses,
   updateExpense,
   deleteExpense,
   getDashboardStats,
+  exportExpenses,
 };
