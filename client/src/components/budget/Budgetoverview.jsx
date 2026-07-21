@@ -1,4 +1,4 @@
-import BudgetCard from "./BudgetCard";
+import BudgetCard from "./Budgetcard";
 
 const BudgetOverview = ({ overall, categories = [], onEdit }) => {
   return (
