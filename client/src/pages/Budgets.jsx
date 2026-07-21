@@ -5,9 +5,9 @@ import PageHeader from "../components/common/PageHeader";
 import Loader from "../components/common/Loader";
 import ErrorBanner from "../components/common/ErrorBanner";
 import Modal from "../components/common/Modal";
-import BudgetForm from "../components/budget/BudgetForm";
-import BudgetOverview from "../components/budget/BudgetOverview";
-import MonthSelector from "../components/budget/MonthSelector";
+import BudgetForm from "../components/budget/Budgetform";
+import BudgetOverview from "../components/budget/Budgetoverview";
+import MonthSelector from "../components/budget/Monthselector";
 import {
   fetchBudgets,
   fetchBudgetStatus,
