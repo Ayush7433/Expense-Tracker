@@ -8,10 +8,13 @@ import Profile from "./pages/Profile";
 import Budgets from "./pages/Budgets";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
+import RootRedirect from "./layouts/RootRedirect";
+import NotFound from "./pages/NotFound";
 
 const App = () => {
   return (
     <Routes>
+      <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
@@ -23,6 +26,8 @@ const App = () => {
           <Route path="/budgets" element={<Budgets />} />
         </Route>
       </Route>
+
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
