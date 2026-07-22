@@ -7,8 +7,8 @@ const AuthLayout = ({ image, title, subtitle, children }) => {
   const logoSrc = themeMode === "dark" ? logoDark : logo;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-gray-50 to-indigo-50 px-4 py-8 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="grid w-full max-w-5xl grid-cols-1 overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 lg:h-[95vh] lg:max-h-[900px] lg:grid-cols-2">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-gray-50 to-indigo-50 px-4 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="grid my-8 md:my-0 w-full max-w-5xl grid-cols-1 overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 lg:h-[95vh] lg:max-h-[900px] lg:grid-cols-2">
         <div className="relative hidden h-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-900 lg:flex">
           <img
             src={image}
