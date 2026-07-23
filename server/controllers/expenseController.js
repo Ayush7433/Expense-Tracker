@@ -172,47 +172,37 @@ const deleteExpense = async (req, res) => {
 const getDashboardStats = async (req, res) => {
   try {
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const { month } = req.query; // optional YYYY-MM
+
+    // Validate month format if provided
+    const isMonthly = month && /^\d{4}-\d{2}$/.test(month);
+
+    let statsMatch;
+    let startOfPeriod;
+    let endOfPeriod;
+
+    if (isMonthly) {
+      const [year, mon] = month.split("-").map(Number);
+      startOfPeriod = new Date(year, mon - 1, 1);
+      endOfPeriod = new Date(year, mon, 1);
+      statsMatch = {
+        user: req.user._id,
+        expenseDate: { $gte: startOfPeriod, $lt: endOfPeriod },
+      };
+    } else {
+      statsMatch = { user: req.user._id };
+    }
 
     const stats = await Expense.aggregate([
-      {
-        $match: {
-          user: req.user._id,
-        },
-      },
+      { $match: statsMatch },
       {
         $group: {
           _id: null,
-          totalExpenses: {
-            $sum: 1,
-          },
-          totalAmount: {
-            $sum: "$amount",
-          },
-          averageExpenses: {
-            $avg: "$amount",
-          },
-          highestExpense: {
-            $max: "$amount",
-          },
-          lowestExpense: {
-            $min: "$amount",
-          },
-          thisMonthExpense: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $gte: ["$expenseDate", startOfMonth] },
-                    { $lt: ["$expenseDate", endOfMonth] },
-                  ],
-                },
-                "$amount",
-                0,
-              ],
-            },
-          },
+          totalExpenses: { $sum: 1 },
+          totalAmount: { $sum: "$amount" },
+          averageExpenses: { $avg: "$amount" },
+          highestExpense: { $max: "$amount" },
+          lowestExpense: { $min: "$amount" },
         },
       },
     ]);
@@ -223,39 +213,70 @@ const getDashboardStats = async (req, res) => {
       averageExpenses: 0,
       highestExpense: 0,
       lowestExpense: 0,
-      thisMonthExpense: 0,
     };
 
     const categoryBreakdown = await Expense.aggregate([
-      { $match: { user: req.user._id } },
+      { $match: statsMatch },
       { $group: { _id: "$category", total: { $sum: "$amount" } } },
       { $project: { _id: 0, category: "$_id", total: 1 } },
     ]);
 
-    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    // Top category for the selected period
+    const topCategoryResult = [...categoryBreakdown].sort(
+      (a, b) => b.total - a.total
+    );
+    const topCategory = topCategoryResult[0]?.category || null;
 
-    const monthlyBreakdown = await Expense.aggregate([
-      {
-        $match: {
-          user: req.user._id,
-          expenseDate: { $gte: twelveMonthsAgo },
+    let chartBreakdown;
+    let chartMode;
+
+    if (isMonthly) {
+      // Daily breakdown for the selected month
+      const dailyBreakdown = await Expense.aggregate([
+        { $match: statsMatch },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$expenseDate" } },
+            total: { $sum: "$amount" },
+          },
         },
-      },
-      {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m", date: "$expenseDate" } },
-          total: { $sum: "$amount" },
+        { $sort: { _id: 1 } },
+        { $project: { _id: 0, day: "$_id", total: 1 } },
+      ]);
+      chartBreakdown = dailyBreakdown;
+      chartMode = "daily";
+    } else {
+      // Trailing 12-month breakdown (existing behaviour)
+      const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+      const monthlyBreakdown = await Expense.aggregate([
+        {
+          $match: {
+            user: req.user._id,
+            expenseDate: { $gte: twelveMonthsAgo },
+          },
         },
-      },
-      { $sort: { _id: 1 } },
-      { $project: { _id: 0, month: "$_id", total: 1 } },
-    ]);
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$expenseDate" } },
+            total: { $sum: "$amount" },
+          },
+        },
+        { $sort: { _id: 1 } },
+        { $project: { _id: 0, month: "$_id", total: 1 } },
+      ]);
+      chartBreakdown = monthlyBreakdown;
+      chartMode = "monthly";
+    }
 
     res.status(200).json({
       success: true,
       stats: dashboardStats,
       categoryBreakdown,
-      monthlyBreakdown,
+      topCategory,
+      chartBreakdown,
+      chartMode,
+      // Keep legacy field name for all-time mode for backward compat
+      ...(chartMode === "monthly" ? { monthlyBreakdown: chartBreakdown } : {}),
     });
   } catch (error) {
     res.status(500).json({

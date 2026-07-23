@@ -1,5 +1,29 @@
+import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { AlertTriangle, CheckCircle2, Wallet } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Wallet, ChevronLeft, ChevronRight } from "lucide-react";
+import { fetchBudgetStatus } from "../../redux/slices/budgetSlice";
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+const getCurrentMonth = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+};
+
+const formatMonthLabel = (month) => {
+  const [year, mon] = month.split("-").map(Number);
+  return `${MONTH_NAMES[mon - 1]} ${year}`;
+};
+
+const shiftMonth = (month, delta) => {
+  const [year, mon] = month.split("-").map(Number);
+  const date = new Date(year, mon - 1 + delta, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+};
 
 const getBarColor = (percentage) => {
   if (percentage > 100) return "bg-red-500";
@@ -13,6 +37,13 @@ const getLabel = (category) => {
 };
 
 const BudgetHealth = ({ overall, categories = [] }) => {
+  const dispatch = useDispatch();
+  const [budgetMonth, setBudgetMonth] = useState(getCurrentMonth);
+
+  useEffect(() => {
+    dispatch(fetchBudgetStatus(budgetMonth));
+  }, [dispatch, budgetMonth]);
+
   const budgeted = [
     ...(overall && overall.limit > 0 ? [overall] : []),
     ...categories.filter((item) => item.limit > 0),
@@ -20,16 +51,50 @@ const BudgetHealth = ({ overall, categories = [] }) => {
 
   return (
     <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Budget Health
-        </h3>
-        <Link
-          to="/budgets"
-          className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-        >
-          View all
-        </Link>
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Budget Health
+          </h3>
+          <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
+            {formatMonthLabel(budgetMonth)}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* Compact month navigator */}
+          <div className="flex items-center gap-1 rounded-xl border border-gray-100 bg-gray-50 px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
+            <button
+              type="button"
+              onClick={() => setBudgetMonth((m) => shiftMonth(m, -1))}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 transition hover:bg-white hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
+              aria-label="Previous month"
+            >
+              <ChevronLeft size={14} />
+            </button>
+
+            <span className="min-w-[100px] text-center text-xs font-semibold text-gray-800 dark:text-slate-200">
+              {formatMonthLabel(budgetMonth)}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setBudgetMonth((m) => shiftMonth(m, 1))}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 transition hover:bg-white hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
+              aria-label="Next month"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+
+          <Link
+            to="/budgets"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            View all
+          </Link>
+        </div>
       </div>
 
       {budgeted.length === 0 ? (
