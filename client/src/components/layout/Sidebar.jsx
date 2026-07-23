@@ -1,15 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import logo from "../../assets/Logo.png";
 import logoDark from "../../assets/Logo_Dark.png";
 import { House, LogOut, NotebookText, UserRound, Wallet } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/slices/authSlice";
+import LogoutConfirmationModal from "../common/LogoutConfirmationModal";
 
 const Sidebar = ({ open, onClose }) => {
   const dispatch = useDispatch();
   const themeMode = useSelector((state) => state.theme.mode);
   const logoSrc = themeMode === "dark" ? logoDark : logo;
+  
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-medium transition-all duration-200 ${
@@ -18,7 +21,13 @@ const Sidebar = ({ open, onClose }) => {
         : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
     }`;
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setIsLogoutModalOpen(true);
+    // Optionally close sidebar on mobile when modal opens, or leave it open behind the modal
+  };
+
+  const handleConfirmLogout = () => {
+    setIsLogoutModalOpen(false);
     dispatch(logout());
     onClose?.();
   };
@@ -83,7 +92,7 @@ const Sidebar = ({ open, onClose }) => {
 
           <div className="pt-4">
             <button
-              onClick={handleLogout}
+              onClick={handleLogoutClick}
               className="flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-900 px-4 py-3 text-[15px] font-medium text-white shadow-lg shadow-slate-200 dark:shadow-slate-950 transition-all duration-200 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 active:scale-[0.99] cursor-pointer"
             >
               <LogOut size={18} />
@@ -92,6 +101,12 @@ const Sidebar = ({ open, onClose }) => {
           </div>
         </div>
       </aside>
+      
+      <LogoutConfirmationModal
+        open={isLogoutModalOpen}
+        onCancel={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+      />
     </>
   );
 };

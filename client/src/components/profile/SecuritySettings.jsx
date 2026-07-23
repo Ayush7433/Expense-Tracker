@@ -1,13 +1,21 @@
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { LogOut, ShieldCheck } from "lucide-react";
 import { logout } from "../../redux/slices/authSlice";
+import LogoutConfirmationModal from "../common/LogoutConfirmationModal";
 
 const SecuritySettings = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setIsLogoutModalOpen(false);
     dispatch(logout());
     navigate("/login");
   };
@@ -35,13 +43,19 @@ const SecuritySettings = () => {
         </div>
 
         <button
-          onClick={handleLogout}
+          onClick={handleLogoutClick}
           className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600"
         >
           <LogOut size={16} />
           Logout
         </button>
       </div>
+
+      <LogoutConfirmationModal
+        open={isLogoutModalOpen}
+        onCancel={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+      />
     </div>
   );
 };
