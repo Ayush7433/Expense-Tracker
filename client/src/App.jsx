@@ -10,6 +10,8 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import RootRedirect from "./layouts/RootRedirect";
 import NotFound from "./pages/NotFound";
+import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const App = () => {
   return (
@@ -17,6 +19,8 @@ const App = () => {
       <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>

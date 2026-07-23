@@ -1,6 +1,8 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { sendResetPasswordEmail } = require("../services/emailService");
 
 async function registerUser(req, res) {
   try {
@@ -68,12 +70,88 @@ async function loginUser(req, res) {
     res.status(200).json({
       message: "User logged in successfully",
       token,
-      user : userResponse,
+      user: userResponse,
     });
   } catch (error) {
     res.status(500).json({
-        message: error.message
-    })
+      message: error.message,
+    });
+  }
+}
+
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    // Always respond the same way, whether or not the user exists —
+    // prevents leaking which emails are registered.
+    const genericMessage =
+      "If that email exists, a password reset link has been sent.";
+
+    if (!user) {
+      return res.status(200).json({ message: genericMessage });
+    }
+
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+    await user.save();
+
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${rawToken}`;
+    await sendResetPasswordEmail(user.email, resetLink);
+
+    res.status(200).json({ message: genericMessage });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+async function resetPassword(req, res) {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    if (password.length < 8) {
+      return res
+        .status(400)
+        .json({ message: "Password must be atleast 8 characters long" });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    }).select("+resetPasswordToken +resetPasswordExpires");
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired reset link" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 }
 
@@ -83,4 +161,10 @@ async function getProfile(req, res) {
   } catch (error) {}
 }
 
-module.exports = { registerUser, loginUser, getProfile };
+module.exports = {
+  registerUser,
+  loginUser,
+  getProfile,
+  forgotPassword,
+  resetPassword,
+};
