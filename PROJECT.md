@@ -2,7 +2,7 @@
 
 ## Overview
 
-A full-stack web application built with the MERN stack (MongoDB, Express, React, Node.js) for tracking personal expenses. It allows users to register, log in, manage their expenses (add, edit, delete), upload a profile avatar, set monthly budgets, and export their data as CSV/PDF reports. The app supports both light and dark themes throughout, and is deployed live (frontend on Vercel, backend on Render, database on MongoDB Atlas).
+A full-stack web application built with the MERN stack (MongoDB, Express, React, Node.js) for tracking personal expenses. It allows users to register, log in, manage their expenses (add, edit, delete — including via natural-language AI parsing), upload a profile avatar, set monthly budgets, and export their data as CSV/PDF reports. The app supports both light and dark themes throughout, and is deployed live (frontend on Vercel, backend on Render, database on MongoDB Atlas).
 
 ## Goals
 
@@ -10,15 +10,17 @@ A full-stack web application built with the MERN stack (MongoDB, Express, React,
 - Categorize and visualize expense data for better financial insights.
 - Help users set and stay within spending limits via budgets.
 - Let users take their data with them via CSV/PDF export.
+- Make expense entry as frictionless as describing it in plain English.
 - Offer responsive UI with a seamless user experience, in both light and dark themes, on any device.
 
 ## Features
 
 - **User Authentication**: Secure user registration and login using JSON Web Tokens (JWT). Password fields support a show/hide visibility toggle.
+- **AI-Powered Quick Add**: Describe an expense in plain language (e.g. "Spent 500 on pizza yesterday") and Gemini parses it into a structured draft — title, amount, category, and date — which opens pre-filled in the standard Add Expense form for review before saving. A "Enter manually instead" option is always available as a fallback.
 - **Expense Management**: Complete CRUD (Create, Read, Update, Delete) operations for expense records.
 - **Categorization**: Expenses are grouped into predefined categories (food, travel, entertainment, shopping, bills, other).
 - **Budget Tracking**: Users can set monthly spending limits per category and/or an overall monthly cap. Progress is visualized with color-coded bars (green/amber/red), and past/future months can be browsed and edited independently.
-- **Budget-Aware Expense Entry**: Before saving an expense that would push a category or the overall budget over its limit, the user sees an inline warning and must explicitly confirm ("Save Anyway") before it's saved. A distinct toast confirms when an expense was saved over budget.
+- **Budget-Aware Expense Entry**: Before saving an expense (whether entered manually or via AI parsing) that would push a category or the overall budget over its limit, the user sees an inline warning and must explicitly confirm ("Save Anyway") before it's saved. A distinct toast confirms when an expense was saved over budget.
 - **CSV/PDF Export**: Export expenses as a CSV (for spreadsheets) or a formatted PDF report (summary stats, category breakdown, a budget snapshot for the relevant month, and the full expense table). Choose to export all expenses or just the currently filtered/searched view.
 - **Dashboard**: Visual representations of expenses and aggregated statistics (e.g., total expenses, breakdown by category), plus a "Budget Health" summary showing categories nearing or over their limit for the current month.
 - **Expense Filtering & Reset**: Filter expenses by category, date range, and keyword search. A reset button clears all active filters at once.
@@ -35,6 +37,7 @@ A full-stack web application built with the MERN stack (MongoDB, Express, React,
 - **Backend**: Node.js, Express.js 5.
 - **Database**: MongoDB via Mongoose (hosted on MongoDB Atlas).
 - **Authentication**: JWT (JSON Web Tokens), bcrypt for password hashing.
+- **AI**: Google Gemini API (`@google/genai` SDK) for natural-language expense parsing, using a flash-tier model for fast, low-cost structured extraction with JSON-constrained output.
 - **File/Image Storage**: ImageKit (cloud CDN for avatar images).
 - **File Uploads**: Multer (memory storage for processing before upload to ImageKit).
 - **Environment Management**: dotenv.
@@ -45,13 +48,14 @@ A full-stack web application built with the MERN stack (MongoDB, Express, React,
 The project follows a standard client-server architecture, deployed as two independently hosted services sharing one database.
 
 - **Frontend (Client)**: A Single Page Application (SPA) built with React and Vite, deployed on Vercel. It communicates with the backend via RESTful APIs. Redux Toolkit is used to manage global state (auth, expenses, dashboard, budgets, theme) and API caching.
-- **Backend (Server)**: A RESTful API built with Express.js, deployed on Render as a persistent Node web service (not serverless — chosen deliberately so Mongoose maintains a stable connection pool rather than reconnecting per request). Handles business logic, authentication, database operations, budget aggregation, export generation, and image uploads.
+- **Backend (Server)**: A RESTful API built with Express.js, deployed on Render as a persistent Node web service (not serverless — chosen deliberately so Mongoose maintains a stable connection pool rather than reconnecting per request). Handles business logic, authentication, database operations, budget aggregation, export generation, AI parsing, and image uploads.
 
 ```mermaid
 graph TD
     Client[React Client SPA - Vercel] <-->|REST API| Server[Express Server - Render]
     Server <-->|Mongoose ODM| DB[(MongoDB Atlas)]
     Server <-->|Upload SDK| IK[ImageKit CDN]
+    Server <-->|Gemini API| AI[Google Gemini]
 ```
 
 ## Folder Structure
@@ -62,7 +66,7 @@ graph TD
   - `src/components/`: Reusable UI components.
     - `common/`: Shared components (`Button`, `Loader`, `Modal`, `UserAvatar`, `SearchInput`, `PageHeader`, `ErrorBanner`, `DeleteConfirmationModal`, `AuthButton`, `ChartCard`, `EmptyChart`, `ErrorBoundary`, `FormField`, `ThemeToggle`, `AppToaster`).
     - `dashboard/`: Dashboard-specific components (`StatsCard`, `RecentExpenses`, `ExpenseChart`, `MonthlyExpenseChart`, `BudgetHealth`).
-    - `expense/`: Expense-specific components (`ExpenseTable`, `ExpenseForm`, `FilterBar`, `DateRangeFilter`, `Pagination`, `ExportModal`).
+    - `expense/`: Expense-specific components (`ExpenseTable`, `ExpenseForm`, `FilterBar`, `DateRangeFilter`, `Pagination`, `ExportModal`, `QuickAddExpenseModal`).
     - `budget/`: Budget-specific components (`BudgetForm`, `BudgetCard`, `BudgetOverview`, `MonthSelector`).
     - `layout/`: Layout and routing components (`Navbar`, `Sidebar`, `ProtectedRoute`, `RootRedirect`).
     - `profile/`: Profile-specific components (`AvatarUploader`, `ProfileCard`, `AccountInfo`, `SecuritySettings`).
@@ -70,21 +74,22 @@ graph TD
   - `src/hooks/`: Custom React hooks.
   - `src/layouts/`: Layout wrappers (`DashboardLayout`, `AuthLayout`).
   - `src/pages/`: Main page components (`Login`, `Register`, `Dashboard`, `Expenses`, `Budgets`, `Profile`, `NotFound`).
-  - `src/redux/`: Redux store configuration, state slices (`authSlice`, `expenseSlice`, `dashboardSlice`, `budgetSlice`, `themeSlice`), and API service wrappers under `redux/services/` (`expenseApi.js`, `dashboardApi.js`, `budgetApi.js`, `authApi.js`, `exportApi.js`).
+  - `src/redux/`: Redux store configuration, state slices (`authSlice`, `expenseSlice`, `dashboardSlice`, `budgetSlice`, `themeSlice`), and API service wrappers under `redux/services/` (`expenseApi.js`, `dashboardApi.js`, `budgetApi.js`, `authApi.js`, `exportApi.js`, `aiApi.js`).
   - `src/utils/`: Utility functions, Zod validation schemas (`authSchema.js`, `expenseSchema.js`, `budgetSchema.js`, `formatters.js`), theme helpers (`theme.js`), and export helpers (`pdfExport.js` — client-side PDF report generation).
 - `server/`: Contains the backend Node.js application.
   - `config/`: Database connection configuration (`db.js`).
-  - `controllers/`: Business logic for handling incoming requests (`authController.js`, `expenseController.js`, `userController.js`, `budgetController.js`).
+  - `controllers/`: Business logic for handling incoming requests (`authController.js`, `expenseController.js`, `userController.js`, `budgetController.js`, `aiController.js`).
   - `middleware/`: Custom Express middlewares (`authMiddleware.js`, `upload.js` for Multer).
   - `models/`: Mongoose schemas and models (`User.js`, `Expense.js`, `Budget.js`).
-  - `routes/`: API endpoint definitions (`authRoutes.js`, `expenseRoutes.js`, `userRoutes.js`, `budgetRoutes.js`).
-  - `services/`: Decoupled service integrations (`imageKitService.js`).
+  - `routes/`: API endpoint definitions (`authRoutes.js`, `expenseRoutes.js`, `userRoutes.js`, `budgetRoutes.js`, `aiRoutes.js`).
+  - `services/`: Decoupled service integrations (`imageKitService.js`, `aiService.js` — wraps the Gemini API call and prompt construction).
   - `utils/`: Helper functions and utilities.
 
 ## Core Modules
 
 - **Authentication Module (`authController`, `authRoutes`, `User` model)**: Handles user registration, login, password hashing (bcrypt), and JWT generation.
 - **Expense Module (`expenseController`, `expenseRoutes`, `Expense` model)**: Manages creating, fetching (with filtering, search, pagination), updating, and deleting expenses. Provides dashboard statistics via server-side aggregation (including per-category and trailing-12-month totals for the dashboard charts). Checks projected budget impact before an expense is saved and refreshes budget status after any expense change.
+- **AI Module (`aiService`, `aiController`, `aiRoutes`, `QuickAddExpenseModal`)**: Parses free-text expense descriptions into structured drafts using the Gemini API. The prompt supplies the current server date (for resolving relative dates like "yesterday") and the exact category enum, and constrains the model's output to JSON via `responseMimeType`. The controller never trusts the model's output blindly — invalid categories fall back to `other`, a missing/invalid amount fails the request outright rather than guessing, unparseable dates fall back to today, and a missing title falls back to a truncated version of the raw input. Parsed drafts are handed to the existing `ExpenseForm` for user review — never saved directly — so all existing validation and budget-check logic applies unchanged.
 - **Export Module (`exportExpenses` in `expenseController`, `ExportModal`, `pdfExport.js`)**: Exposes a filter-aware, non-paginated export endpoint returning either a streamed CSV file or JSON (used to build a PDF client-side). Shares its filter-building logic with `getExpenses` via a common helper. The PDF includes a summary, category breakdown, and a budget snapshot for whichever month the export covers (or the current month, if the export spans multiple months or is unfiltered).
 - **Budget Module (`budgetController`, `budgetRoutes`, `Budget` model)**: Manages creating/updating (upsert by user + category + month), fetching, and deleting monthly budgets — per category or an `'overall'` cap. Provides a `status` aggregation endpoint that joins budgeted limits with actual spend for a given month, returning spent/limit/remaining/percentage per category and overall.
 - **User/Profile Module (`userController`, `userRoutes`)**: Handles profile avatar uploads. Uses Multer (memory storage) to receive the file and delegates cloud upload to `imageKitService`.
@@ -102,10 +107,11 @@ graph TD
 5. **State Update**: The client stores the JWT and updates the Redux state (`authSlice`), then redirects to the Dashboard.
 6. **Data Fetching**: Protected routes (Dashboard/Expenses/Budgets) dispatch API calls to fetch data, attaching the JWT in the `Authorization` header.
 7. **Data Display**: React components render the data, and charts (`recharts`) visualize server-aggregated statistics, with theme-aware colors for gridlines, axes, and tooltips.
-8. **Adding/Editing an Expense**: Before the expense is saved, the client checks projected spend against the relevant category and overall budgets for that expense's month. If it would exceed a limit, the user sees an inline warning and must confirm "Save Anyway" before the API call is made; a distinct toast confirms an over-budget save.
-9. **Budget Tracking**: On the Budgets page, users set/edit per-category or overall limits for any month (past, current, or future) via a modal form; `BudgetOverview` renders color-coded progress cards, refetched whenever the selected month changes or an expense affecting that month is created/updated/deleted.
-10. **Exporting Data**: From the Expenses page, the user picks a scope (all expenses or the current filtered view) and a format (CSV or PDF). CSV is streamed directly from the server; PDF is assembled client-side from the same export endpoint's JSON response plus a budget-status lookup for the relevant month.
-11. **Avatar Upload**: User selects an image on the Profile page → Multer receives the file buffer → `imageKitService` uploads it to ImageKit → the returned CDN URL is saved to the User document in MongoDB → Redux state is updated via `updateUser` → Navbar avatar re-renders immediately.
+8. **Adding an Expense (AI-assisted)**: Clicking "Add Expense" opens the Quick Add modal. The user describes the expense in plain text; it's sent to `/api/ai/parse-expense`, parsed and sanitized server-side, and the result opens pre-filled in the standard expense form (flagged as AI-parsed) for review — or the user can bypass this entirely via "Enter manually instead" for a blank form.
+9. **Adding/Editing an Expense (validation)**: Regardless of entry path, before the expense is saved, the client checks projected spend against the relevant category and overall budgets for that expense's month. If it would exceed a limit, the user sees an inline warning and must confirm "Save Anyway" before the API call is made; a distinct toast confirms an over-budget save.
+10. **Budget Tracking**: On the Budgets page, users set/edit per-category or overall limits for any month (past, current, or future) via a modal form; `BudgetOverview` renders color-coded progress cards, refetched whenever the selected month changes or an expense affecting that month is created/updated/deleted.
+11. **Exporting Data**: From the Expenses page, the user picks a scope (all expenses or the current filtered view) and a format (CSV or PDF). CSV is streamed directly from the server; PDF is assembled client-side from the same export endpoint's JSON response plus a budget-status lookup for the relevant month.
+12. **Avatar Upload**: User selects an image on the Profile page → Multer receives the file buffer → `imageKitService` uploads it to ImageKit → the returned CDN URL is saved to the User document in MongoDB → Redux state is updated via `updateUser` → Navbar avatar re-renders immediately.
 
 ## Data Models
 
@@ -163,6 +169,10 @@ Compound unique index on `{ user, category, month }` — one budget document per
 - `GET /budgets/status?month=YYYY-MM`: Get spend-vs-limit status for every category and the overall cap for the given month — returns `{ month, categories: [{ category, spent, limit, remaining, percentage }], overall: {...} }`.
 - `DELETE /budgets/:id`: Delete a specific budget.
 
+### AI Routes (`/api/ai`) - Requires Auth
+
+- `POST /parse-expense`: Parses a free-text expense description via Gemini. Expects `{ text }`. Returns `{ success, parsed: { title, amount, category, expenseDate, description } }`, with the result sanitized against the valid category enum and a strictly-validated positive amount.
+
 ### User Routes (`/api/users`) - All require Auth
 
 - `POST /avatar`: Upload a new profile picture. Accepts `multipart/form-data` with field `avatar`. Returns updated user object with new `avatarUrl`.
@@ -177,6 +187,8 @@ Compound unique index on `{ user, category, month }` — one budget document per
   - `IMAGEKIT_PUBLIC_KEY`: ImageKit public API key.
   - `IMAGEKIT_PRIVATE_KEY`: ImageKit private API key.
   - `IMAGEKIT_URL_ENDPOINT`: ImageKit CDN URL endpoint.
+  - `GEMINI_API_KEY`: Google Gemini API key (from Google AI Studio), used for natural-language expense parsing.
+  - `GEMINI_MODEL`: Gemini model name to use (currently `gemini-3.5-flash`; Google has rotated flash-tier model names multiple times in recent months, so this is kept configurable rather than hardcoded).
 - **Client `.env` / Vercel Environment Variable**:
   - `VITE_APP_API_URL`: Base URL for the deployed backend API (e.g., `https://your-app.onrender.com/api`). Since Vite bakes this in at build time, changing it requires a redeploy, not just a restart.
 
@@ -188,7 +200,7 @@ No additional environment variables are required for Dark Mode, Budgets, or Expo
   ```json
   { "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
   ```
-- **Backend**: Deployed on Render as a persistent Node web service (not serverless functions — chosen so Mongoose keeps a stable connection pool). Root Directory: `server`. Build Command: `npm install`. Start Command: `npm start`. Render's free tier spins down after ~15 minutes of inactivity; the first request after idle can take 20–30 seconds to respond.
+- **Backend**: Deployed on Render as a persistent Node web service (not serverless functions — chosen so Mongoose keeps a stable connection pool). Root Directory: `server`. Build Command: `npm install`. Start Command: `npm start`. Render's free tier spins down after ~15 minutes of inactivity; the first request after idle can take 20–30 seconds to respond. Remember to add `GEMINI_API_KEY` and `GEMINI_MODEL` alongside the other environment variables here.
 - **Database**: MongoDB Atlas. Network Access allows `0.0.0.0/0` since Render's free tier doesn't provide a fixed outbound IP; access is still protected by the credentials embedded in `MONGO_URI`.
 - **CORS**: Currently open (`app.use(cors())`, no origin restriction). Since auth uses JWT-in-header (not cookies), this isn't a credential-leaking risk, but it can optionally be tightened to the deployed frontend's exact origin.
 
@@ -257,12 +269,14 @@ No additional environment variables are required for Dark Mode, Budgets, or Expo
 - `cors`: Express middleware to enable Cross-Origin Resource Sharing.
 - `multer`: Middleware for handling `multipart/form-data` (file uploads).
 - `imagekit`: Official ImageKit Node.js SDK for cloud image storage.
+- `@google/genai`: Official Google Gemini SDK, used for natural-language expense parsing.
 
 ## Security Considerations
 
 - **Authentication**: JWT-based stateless authentication protects user sessions.
 - **Passwords**: Passwords are hashed securely using `bcrypt` before storage. They are never returned in queries (`select: false`). The show/hide visibility toggle on password fields is purely a client-side UI convenience and has no effect on how passwords are transmitted or stored.
-- **Authorization**: `authMiddleware` protects private routes, decoding the JWT to ensure users only access their own data — including budgets and exports, which are always scoped to `req.user._id`.
+- **Authorization**: `authMiddleware` protects private routes, decoding the JWT to ensure users only access their own data — including budgets, exports, and AI parsing requests, which are always scoped to `req.user._id` or otherwise gated behind a valid session.
+- **AI Input Handling**: User-supplied free text is sent to the Gemini API for parsing, but the model's output is never trusted or persisted blindly — the server validates the category against a fixed enum, rejects invalid/non-positive amounts outright, and falls back sensibly on ambiguous dates or missing titles. Parsed results are never auto-saved; they always require explicit user confirmation via the standard expense form.
 - **CORS**: Enabled on the server to manage cross-origin requests; currently unrestricted by origin (see Deployment section for the tradeoff).
 - **File Uploads**: Multer uses memory storage (no disk writes) and the file buffer is passed directly to ImageKit, reducing server-side file exposure.
 - **Database Network Access**: MongoDB Atlas allows connections from any IP (`0.0.0.0/0`) to accommodate Render's dynamic egress IPs; access is still gated by the credentials in `MONGO_URI`.
@@ -276,27 +290,30 @@ No additional environment variables are required for Dark Mode, Budgets, or Expo
 - **Dashboard Chart Aggregation**: Category and monthly totals for the dashboard charts are computed entirely via MongoDB aggregation (`categoryBreakdown`, `monthlyBreakdown` on `/stats`) rather than fetching raw expense records to the client — this scales correctly regardless of how many expenses a user accumulates, replacing an earlier approach that fetched up to 1,000 raw records for client-side aggregation.
 - **Budget Status Aggregation**: Spend-per-category is computed server-side via a single Mongo aggregation (`$match` + `$group`) per request rather than pulling all expenses to the client, keeping the Budgets page and Dashboard's "Budget Health" section fast even as expense history grows.
 - **Export**: The export endpoint reuses the same aggregation-based approach for its summary/category breakdown, and caps the raw record count returned at 5,000 to keep response sizes and PDF generation time bounded.
+- **AI Parsing**: Uses a flash-tier Gemini model deliberately, rather than a larger/slower one — this is a short structured-extraction task, not a task needing deep reasoning, so the cheaper, faster model is the right tradeoff.
 - **Render Cold Starts**: On the free tier, the backend spins down after ~15 minutes idle; the first request afterward incurs a 20–30 second cold-start delay. Not addressed in the current deployment (would require a paid tier or a keep-alive ping).
 
 ## Input Validation & Limits
 
-| Field               | Limit                                                |
-| :------------------ | :--------------------------------------------------- |
-| User name           | min 3, max 50 characters                             |
-| User email          | valid email format, max 100 characters               |
-| User password       | min 8 characters                                     |
-| Expense title       | min 1, max 50 characters                             |
-| Expense amount      | greater than 0, max ₹1,000,000,000                   |
-| Expense category    | min 1, max 50 characters                             |
-| Expense description | optional, max 200 characters                         |
-| Budget amount       | greater than 0, max ₹1,000,000,000                   |
-| Budget category     | required, one of the expense categories or `overall` |
-| Budget month        | required, `YYYY-MM` format                           |
-| Avatar file size    | max 5 MB                                             |
-| Avatar file types   | JPEG, PNG, WebP                                      |
-| Export record cap   | 5,000 expenses per export request                    |
+| Field                 | Limit                                                                       |
+| :-------------------- | :-------------------------------------------------------------------------- |
+| User name             | min 3, max 50 characters                                                    |
+| User email            | valid email format, max 100 characters                                      |
+| User password         | min 8 characters                                                            |
+| Expense title         | min 1, max 50 characters                                                    |
+| Expense amount        | greater than 0, max ₹1,000,000,000                                          |
+| Expense category      | min 1, max 50 characters                                                    |
+| Expense description   | optional, max 200 characters                                                |
+| Budget amount         | greater than 0, max ₹1,000,000,000                                          |
+| Budget category       | required, one of the expense categories or `overall`                        |
+| Budget month          | required, `YYYY-MM` format                                                  |
+| Avatar file size      | max 5 MB                                                                    |
+| Avatar file types     | JPEG, PNG, WebP                                                             |
+| Export record cap     | 5,000 expenses per export request                                           |
+| AI-parsed title       | truncated to 50 characters (falls back to raw input if the model omits one) |
+| AI-parsed description | truncated to 200 characters                                                 |
 
-Validation is enforced both on the **client** (via Zod schemas in `authSchema.js`, `expenseSchema.js`, and `budgetSchema.js`) and mirrored on the **server** (Mongoose schema validation, plus explicit month-format checks in `budgetController.js` since Mongoose validators don't run on read/query paths).
+Validation is enforced both on the **client** (via Zod schemas in `authSchema.js`, `expenseSchema.js`, and `budgetSchema.js`) and mirrored on the **server** (Mongoose schema validation, plus explicit month-format checks in `budgetController.js` and category/amount/date sanitization in `aiController.js`, since neither Mongoose validators nor client-side Zod run on data coming back from an external AI service).
 
 ## Responsive Design Notes
 
@@ -317,6 +334,7 @@ Validation is enforced both on the **client** (via Zod schemas in `authSchema.js
 - Budget-vs-expense checks compare against the month derived from the expense's date; editing an expense's category _and_ moving it to a different month in the same edit is a rarer edge case where the old amount may not be perfectly subtracted from its original category/month before the new projection is calculated.
 - Export is capped at 5,000 records per request; a user with more expenses than that in a single export scope will have older records silently excluded rather than paginated or warned about.
 - The deployed backend (Render free tier) spins down when idle, causing a noticeable delay on the first request after a period of inactivity.
+- AI parsing depends on an external Gemini model whose name/availability has changed multiple times in recent months; the model name is configurable via `GEMINI_MODEL` specifically to make swapping it quick when a model is deprecated.
 - No automated test coverage (unit/integration) exists yet for either the client or server.
 
 ## Future Improvements
@@ -329,6 +347,8 @@ Validation is enforced both on the **client** (via Zod schemas in `authSchema.js
 - Multi-currency support.
 - Budget rollover (carry unused budget into the next month) or recurring budget templates.
 - Raise or paginate past the current export record cap for very high-volume users.
+- AI receipt scanning (image upload → extracted expense, reusing the existing Multer/ImageKit upload path).
+- Conversational spending insights (chat-style Q&A over a user's own aggregated expense/budget data).
 
 ## Troubleshooting
 
@@ -344,3 +364,5 @@ Validation is enforced both on the **client** (via Zod schemas in `authSchema.js
 - **Budget Warning Doesn't Appear on an Over-Budget Expense**: The check fails open — if the `GET /budgets/status` call errors out (e.g. server down), `ExpenseForm` silently allows the save rather than blocking it. Check the network tab if a warning you expect isn't showing.
 - **Export Seems to Be Missing Records**: Check whether the matching record count exceeds the 5,000-record export cap.
 - **Favicon Not Updating**: Browsers cache favicons aggressively. If a new tab icon (`client/public/logo.png`) doesn't appear after deploying, try a hard refresh or an incognito window before assuming it's broken.
+- **AI Quick Add Returns "Couldn't understand that"**: Check the server console for the underlying Gemini error (logged explicitly in `aiController.js`). A common cause is Google deprecating the configured `GEMINI_MODEL` for new API keys — check Google AI Studio for the current recommended flash-tier model name and update the env var accordingly.
+- **AI Quick Add Fails with a 404 Mentioning "no longer available to new users"**: The model in `GEMINI_MODEL` has been deprecated for new keys. Swap it for the currently recommended flash model (check Google's quickstart docs, since this has changed multiple times) and restart the server.
