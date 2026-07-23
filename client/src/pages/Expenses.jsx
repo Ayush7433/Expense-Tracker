@@ -22,7 +22,8 @@ import FilterBar from "../components/expense/FilterBar";
 import DateRangeFilter from "../components/expense/DateRangeFilter";
 import Pagination from "../components/expense/Pagination";
 import ExportModal from "../components/expense/ExportModal";
-import { Download } from "lucide-react";
+import QuickAddExpenseModal from "../components/expense/QuickAddExpenseModal";
+import { Download, Sparkles } from "lucide-react";
 
 const Expenses = () => {
   const dispatch = useDispatch();
@@ -39,6 +40,8 @@ const Expenses = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [isAiDraft, setIsAiDraft] = useState(false);
 
   const search = searchParams.get("search") || "";
   const page = Number(searchParams.get("page")) || 1;
@@ -85,6 +88,7 @@ const Expenses = () => {
     if (formLoading) return;
     setIsModalOpen(false);
     setSelectedExpense(null);
+    setIsAiDraft(false);
   };
 
   const openDeleteModal = (expense) => {
@@ -175,6 +179,19 @@ const Expenses = () => {
     dispatch(fetchExpenses({ page: 1, limit: 10 }));
   };
 
+  const handleParsed = (parsedDraft) => {
+    setIsQuickAddOpen(false);
+    setSelectedExpense(parsedDraft);
+    setIsAiDraft(true);
+    setIsModalOpen(true);
+  };
+
+  const handleManualEntry = () => {
+    setIsQuickAddOpen(false);
+    setIsAiDraft(false);
+    openAddModal();
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -196,7 +213,7 @@ const Expenses = () => {
 
             <Button
               icon={Plus}
-              onClick={openAddModal}
+              onClick={() => setIsQuickAddOpen(true)}
               className="flex-1 sm:flex-none"
             >
               Add Expense
@@ -253,9 +270,21 @@ const Expenses = () => {
 
       <Modal
         open={isModalOpen}
-        title={selectedExpense ? "Edit Expense" : "Add Expense"}
+        title={
+          isAiDraft
+            ? "Confirm AI-Parsed Expense"
+            : selectedExpense
+              ? "Edit Expense"
+              : "Add Expense"
+        }
         onClose={closeModal}
       >
+        {isAiDraft && (
+          <p className="mb-4 flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+            <Sparkles size={16} />
+            AI-parsed — please review the details before saving.
+          </p>
+        )}
         <ExpenseForm
           initialValues={selectedExpense}
           loading={formLoading}
@@ -269,6 +298,18 @@ const Expenses = () => {
         onCancel={closeDeleteModal}
         onConfirm={handleDeleteExpense}
       />
+
+      <Modal
+        open={isQuickAddOpen}
+        title="Add Expense"
+        onClose={() => setIsQuickAddOpen(false)}
+      >
+        <QuickAddExpenseModal
+          onParsed={handleParsed}
+          onManualEntry={handleManualEntry}
+          onClose={() => setIsQuickAddOpen(false)}
+        />
+      </Modal>
 
       <Modal
         open={isExportModalOpen}
