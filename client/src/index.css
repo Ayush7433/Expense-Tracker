@@ -6,6 +6,7 @@ html,
 body {
   overflow-x: hidden;
   max-width: 100%;
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white;
 }
 
 /* Ensure flex/grid children can shrink below their content size for truncation to work */
