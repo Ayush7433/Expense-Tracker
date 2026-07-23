@@ -1,4 +1,5 @@
 require("dotenv").config();
+const dns = require("dns");
 const express = require("express");
 const connectDB = require("./config/db");
 const app = express();
@@ -10,6 +11,7 @@ const aiRoutes = require('./routes/aiRoutes');
 const userRoutes = require("./routes/userRoutes");
 const path = require("path");
 
+dns.setDefaultResultOrder("ipv4first");
 app.use(express.json());
 app.use(cors());
 
