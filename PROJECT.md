@@ -16,7 +16,7 @@ A full-stack web application built with the MERN stack (MongoDB, Express, React,
 ## Features
 
 - **User Authentication**: Secure user registration and login using JSON Web Tokens (JWT). Password fields support a show/hide visibility toggle.
-- **Forgot Password**: Users can request a password reset link via email. A time-limited, single-use token is emailed (Nodemailer + Gmail SMTP) and used to set a new password without needing the old one. The flow never reveals whether a given email is registered.
+- **Forgot Password**: Users can request a password reset link via email. A time-limited, single-use token is emailed (via Brevo's transactional email HTTP API) and used to set a new password without needing the old one. The flow never reveals whether a given email is registered.
 - **AI-Powered Quick Add**: Describe an expense in plain language (e.g. "Spent 500 on pizza yesterday") and Gemini parses it into a structured draft — title, amount, category, and date — which opens pre-filled in the standard Add Expense form for review before saving. A "Enter manually instead" option is always available as a fallback.
 - **Expense Management**: Complete CRUD (Create, Read, Update, Delete) operations for expense records.
 - **Categorization**: Expenses are grouped into predefined categories (food, travel, entertainment, shopping, bills, other).
@@ -38,7 +38,7 @@ A full-stack web application built with the MERN stack (MongoDB, Express, React,
 - **Backend**: Node.js, Express.js 5.
 - **Database**: MongoDB via Mongoose (hosted on MongoDB Atlas).
 - **Authentication**: JWT (JSON Web Tokens), bcrypt for password hashing.
-- **Email**: Nodemailer (Gmail SMTP) for sending password reset links.
+- **Email**: Brevo transactional email HTTP API (via `fetch`) for sending password reset links.
 - **AI**: Google Gemini API (`@google/genai` SDK) for natural-language expense parsing, using a flash-tier model for fast, low-cost structured extraction with JSON-constrained output.
 - **File/Image Storage**: ImageKit (cloud CDN for avatar images).
 - **File Uploads**: Multer (memory storage for processing before upload to ImageKit).
@@ -84,12 +84,12 @@ graph TD
   - `middleware/`: Custom Express middlewares (`authMiddleware.js`, `upload.js` for Multer).
   - `models/`: Mongoose schemas and models (`User.js`, `Expense.js`, `Budget.js`).
   - `routes/`: API endpoint definitions (`authRoutes.js`, `expenseRoutes.js`, `userRoutes.js`, `budgetRoutes.js`, `aiRoutes.js`).
-  - `services/`: Decoupled service integrations (`imageKitService.js`, `aiService.js` — wraps the Gemini API call and prompt construction, `emailService.js` — Nodemailer/Gmail SMTP wrapper for sending password reset emails).
+  - `services/`: Decoupled service integrations (`imageKitService.js`, `aiService.js` — wraps the Gemini API call and prompt construction, `emailService.js` — calls Brevo's transactional email HTTP API (via built-in `fetch`) to send password reset emails).
   - `utils/`: Helper functions and utilities.
 
 ## Core Modules
 
-- **Authentication Module (`authController`, `authRoutes`, `User` model, `emailService`)**: Handles user registration, login, password hashing (bcrypt), and JWT generation. Also handles password reset: `forgotPassword` generates a random token, stores only its SHA-256 hash plus a 15-minute expiry on the `User` document, and emails the raw token as a link via `emailService` (Nodemailer/Gmail); `resetPassword` verifies the hashed token and expiry, then re-hashes and saves the new password (manually, via `bcrypt.hash`, mirroring `registerUser` — there is no Mongoose pre-save hashing hook). The endpoint always returns the same generic response regardless of whether the submitted email is registered, to avoid leaking account existence.
+- **Authentication Module (`authController`, `authRoutes`, `User` model, `emailService`)**: Handles user registration, login, password hashing (bcrypt), and JWT generation. Also handles password reset: `forgotPassword` generates a random token, stores only its SHA-256 hash plus a 15-minute expiry on the `User` document, and emails the raw token as a link via `emailService` (a direct HTTPS call to Brevo's transactional email API); `resetPassword` verifies the hashed token and expiry, then re-hashes and saves the new password (manually, via `bcrypt.hash`, mirroring `registerUser` — there is no Mongoose pre-save hashing hook). The endpoint always returns the same generic response regardless of whether the submitted email is registered, to avoid leaking account existence.
 - **Expense Module (`expenseController`, `expenseRoutes`, `Expense` model)**: Manages creating, fetching (with filtering, search, pagination), updating, and deleting expenses. Provides dashboard statistics via server-side aggregation (including per-category and trailing-12-month totals for the dashboard charts). Checks projected budget impact before an expense is saved and refreshes budget status after any expense change.
 - **AI Module (`aiService`, `aiController`, `aiRoutes`, `QuickAddExpenseModal`)**: Parses free-text expense descriptions into structured drafts using the Gemini API. The prompt supplies the current server date (for resolving relative dates like "yesterday") and the exact category enum, and constrains the model's output to JSON via `responseMimeType`. The controller never trusts the model's output blindly — invalid categories fall back to `other`, a missing/invalid amount fails the request outright rather than guessing, unparseable dates fall back to today, and a missing title falls back to a truncated version of the raw input. Parsed drafts are handed to the existing `ExpenseForm` for user review — never saved directly — so all existing validation and budget-check logic applies unchanged.
 - **Export Module (`exportExpenses` in `expenseController`, `ExportModal`, `pdfExport.js`)**: Exposes a filter-aware, non-paginated export endpoint returning either a streamed CSV file or JSON (used to build a PDF client-side). Shares its filter-building logic with `getExpenses` via a common helper. The PDF includes a summary, category breakdown, and a budget snapshot for whichever month the export covers (or the current month, if the export spans multiple months or is unfiltered).
@@ -194,6 +194,8 @@ Compound unique index on `{ user, category, month }` — one budget document per
   - `IMAGEKIT_URL_ENDPOINT`: ImageKit CDN URL endpoint.
   - `GEMINI_API_KEY`: Google Gemini API key (from Google AI Studio), used for natural-language expense parsing.
   - `GEMINI_MODEL`: Gemini model name to use (currently `gemini-3.5-flash`; Google has rotated flash-tier model names multiple times in recent months, so this is kept configurable rather than hardcoded).
+  - `BREVO_API_KEY`: API key from Brevo (Senders, Domains & Dedicated IPs → SMTP & API → API Keys), used by `emailService.js` to send password reset emails via Brevo's transactional email HTTP API. The `sender` email hardcoded in `emailService.js` must be a verified sender in Brevo's dashboard.
+  - `CLIENT_URL`: The frontend's base URL (e.g. `https://your-app.vercel.app` in production, `http://localhost:5173` locally), used to build the password reset link embedded in the email.
 - **Client `.env` / Vercel Environment Variable**:
   - `VITE_APP_API_URL`: Base URL for the deployed backend API (e.g., `https://your-app.onrender.com/api`). Since Vite bakes this in at build time, changing it requires a redeploy, not just a restart.
 
@@ -205,7 +207,7 @@ No additional environment variables are required for Dark Mode, Budgets, or Expo
   ```json
   { "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
   ```
-- **Backend**: Deployed on Render as a persistent Node web service (not serverless functions — chosen so Mongoose keeps a stable connection pool). Root Directory: `server`. Build Command: `npm install`. Start Command: `npm start`. Render's free tier spins down after ~15 minutes of inactivity; the first request after idle can take 20–30 seconds to respond. Remember to add `GEMINI_API_KEY` and `GEMINI_MODEL` alongside the other environment variables here.
+- **Backend**: Deployed on Render as a persistent Node web service (not serverless functions — chosen so Mongoose keeps a stable connection pool). Root Directory: `server`. Build Command: `npm install`. Start Command: `npm start`. Render's free tier spins down after ~15 minutes of inactivity; the first request after idle can take 20–30 seconds to respond. Remember to add `GEMINI_API_KEY`, `GEMINI_MODEL`, `BREVO_API_KEY`, and `CLIENT_URL` (set to the production Vercel URL, not `localhost`) alongside the other environment variables here. Note: an earlier Nodemailer/Gmail SMTP approach was tried first but abandoned — Render's outbound network could not reliably reach Gmail's SMTP servers over IPv6 (`ENETUNREACH`), which is why email sending uses an HTTP-based provider (Brevo) instead of SMTP.
 - **Database**: MongoDB Atlas. Network Access allows `0.0.0.0/0` since Render's free tier doesn't provide a fixed outbound IP; access is still protected by the credentials embedded in `MONGO_URI`.
 - **CORS**: Currently open (`app.use(cors())`, no origin restriction). Since auth uses JWT-in-header (not cookies), this isn't a credential-leaking risk, but it can optionally be tightened to the deployed frontend's exact origin.
 
@@ -271,7 +273,6 @@ No additional environment variables are required for Dark Mode, Budgets, or Expo
 - `mongoose`: MongoDB object modeling tool.
 - `jsonwebtoken`: Implementation of JSON Web Tokens for auth.
 - `bcrypt`: Library to hash passwords securely.
-- `nodemailer`: Sends password reset emails via Gmail SMTP.
 - `dotenv`: Loads environment variables from a `.env` file.
 - `cors`: Express middleware to enable Cross-Origin Resource Sharing.
 - `multer`: Middleware for handling `multipart/form-data` (file uploads).
@@ -344,6 +345,7 @@ Validation is enforced both on the **client** (via Zod schemas in `authSchema.js
 - The deployed backend (Render free tier) spins down when idle, causing a noticeable delay on the first request after a period of inactivity.
 - AI parsing depends on an external Gemini model whose name/availability has changed multiple times in recent months; the model name is configurable via `GEMINI_MODEL` specifically to make swapping it quick when a model is deprecated.
 - No automated test coverage (unit/integration) exists yet for either the client or server.
+- Password reset emails are sent from a single verified Brevo sender address (a personal Gmail address, not a project domain) and are capped at Brevo's free-tier limit (300 emails/day); moving to a custom domain and/or a paid tier would be needed before high-volume real-world use.
 
 ## Future Improvements
 
@@ -374,6 +376,7 @@ Validation is enforced both on the **client** (via Zod schemas in `authSchema.js
 - **Favicon Not Updating**: Browsers cache favicons aggressively. If a new tab icon (`client/public/logo.png`) doesn't appear after deploying, try a hard refresh or an incognito window before assuming it's broken.
 - **AI Quick Add Returns "Couldn't understand that"**: Check the server console for the underlying Gemini error (logged explicitly in `aiController.js`). A common cause is Google deprecating the configured `GEMINI_MODEL` for new API keys — check Google AI Studio for the current recommended flash-tier model name and update the env var accordingly.
 - **AI Quick Add Fails with a 404 Mentioning "no longer available to new users"**: The model in `GEMINI_MODEL` has been deprecated for new keys. Swap it for the currently recommended flash model (check Google's quickstart docs, since this has changed multiple times) and restart the server.
-- **Forgot Password Email Not Sending ("Invalid login" error)**: `EMAIL_USER`/`EMAIL_PASS` must be a Gmail address with 2-Step Verification enabled and an **App Password** (not the real account password) generated at myaccount.google.com/apppasswords.
+- **Forgot Password Email Not Sending / 401 from Brevo**: Confirm `BREVO_API_KEY` is set (Render's environment for the deployed instance, or `server/.env` locally) and that the `sender` email in `emailService.js` matches a **verified sender** in Brevo's dashboard (Senders, Domains & Dedicated IPs → Senders) — Brevo rejects sends from an unverified sender address.
 - **Reset Link Says "Invalid or Expired"**: The token is single-use and expires in 15 minutes — request a new link from `/forgot-password` rather than reusing an old email.
-- **Reset Password Email Lands in Spam**: Common for a freshly configured Gmail SMTP sending address; not a bug. Improves over time as the sending address builds reputation.
+- **Reset Password Email Lands in Spam**: Common for a freshly configured sending identity; not a bug. Improves over time as the sender builds reputation.
+- **`fetch is not defined` in `emailService.js`**: The Brevo integration uses Node's built-in global `fetch`, which requires **Node 18+**. Check the runtime version (`node -v` locally; Render's Node version setting for deployed).
