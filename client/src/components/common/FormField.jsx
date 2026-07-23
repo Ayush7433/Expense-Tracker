@@ -42,7 +42,7 @@ const FormField = forwardRef(
                 : "border-gray-200 dark:border-slate-700 focus:ring-blue-100 focus:border-blue-500 dark:focus:ring-blue-950"
             } bg-white text-gray-900 dark:bg-slate-800 dark:text-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 ${
               isPassword ? "pr-12" : ""
-            } ${className}`}
+            } ${type === "date" ? "dark:[color-scheme:dark] min-h-[46px]" : ""} ${className}`}
           >
             {children}
           </Component>

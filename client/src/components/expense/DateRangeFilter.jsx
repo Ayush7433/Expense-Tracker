@@ -29,11 +29,16 @@ const DateRangeFilter = () => {
           Start Date
         </label>
         <input
-          type="date"
+          type={startDate ? "date" : "text"}
+          placeholder="dd-mm-yyy"
+          onFocus={(e) => (e.target.type = "date")}
+          onBlur={(e) => {
+            if (!e.target.value) e.target.type = "text";
+          }}
           name="startDate"
           value={startDate}
           onChange={handleChange}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950 dark:[color-scheme:dark]"
+          className="w-full min-h-[46px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950 dark:[color-scheme:dark]"
         />
       </div>
 
@@ -42,11 +47,16 @@ const DateRangeFilter = () => {
           End Date
         </label>
         <input
-          type="date"
+          type={endDate ? "date" : "text"}
+          placeholder="dd-mm-yyy"
+          onFocus={(e) => (e.target.type = "date")}
+          onBlur={(e) => {
+            if (!e.target.value) e.target.type = "text";
+          }}
           name="endDate"
           value={endDate}
           onChange={handleChange}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950 dark:[color-scheme:dark]"
+          className="w-full min-h-[46px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950 dark:[color-scheme:dark]"
         />
       </div>
     </div>
