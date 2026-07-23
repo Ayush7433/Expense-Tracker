@@ -46,3 +46,22 @@ body {
 * {
   -ms-overflow-style: none;
 }
+
+/* Fix unfilled date input segments (dd/mm/yyyy) not rendering visibly on mobile */
+input[type="date"] {
+  color: #334155;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  color: inherit;
+  -webkit-text-fill-color: currentColor;
+  opacity: 1;
+}
+
+.dark input[type="date"] {
+  color: #e2e8f0; 
+}
