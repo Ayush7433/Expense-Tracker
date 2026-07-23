@@ -79,6 +79,15 @@ const Login = () => {
           {...register("password")}
         />
 
+        <div className="-mt-2 text-right">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-medium text-blue-600"
+          >
+            Forgot password?
+          </Link>
+        </div>
+
         <AuthButton loading={loading} loadingText="Logging in...">
           Login
         </AuthButton>

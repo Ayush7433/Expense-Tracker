@@ -16,6 +16,7 @@ A full-stack web application built with the MERN stack (MongoDB, Express, React,
 ## Features
 
 - **User Authentication**: Secure user registration and login using JSON Web Tokens (JWT). Password fields support a show/hide visibility toggle.
+- **Forgot Password**: Users can request a password reset link via email. A time-limited, single-use token is emailed (Nodemailer + Gmail SMTP) and used to set a new password without needing the old one. The flow never reveals whether a given email is registered.
 - **AI-Powered Quick Add**: Describe an expense in plain language (e.g. "Spent 500 on pizza yesterday") and Gemini parses it into a structured draft — title, amount, category, and date — which opens pre-filled in the standard Add Expense form for review before saving. A "Enter manually instead" option is always available as a fallback.
 - **Expense Management**: Complete CRUD (Create, Read, Update, Delete) operations for expense records.
 - **Categorization**: Expenses are grouped into predefined categories (food, travel, entertainment, shopping, bills, other).
@@ -37,6 +38,7 @@ A full-stack web application built with the MERN stack (MongoDB, Express, React,
 - **Backend**: Node.js, Express.js 5.
 - **Database**: MongoDB via Mongoose (hosted on MongoDB Atlas).
 - **Authentication**: JWT (JSON Web Tokens), bcrypt for password hashing.
+- **Email**: Nodemailer (Gmail SMTP) for sending password reset links.
 - **AI**: Google Gemini API (`@google/genai` SDK) for natural-language expense parsing, using a flash-tier model for fast, low-cost structured extraction with JSON-constrained output.
 - **File/Image Storage**: ImageKit (cloud CDN for avatar images).
 - **File Uploads**: Multer (memory storage for processing before upload to ImageKit).
@@ -64,7 +66,7 @@ graph TD
   - `public/`: Static assets served as-is at the site root, including `logo.png` (browser tab favicon).
   - `src/assets/`: Bundled static assets like images or icons, including theme-specific variants (e.g. `Logo.png` / `Logo_Darks.png`, `login.jpeg` / `Auth_Dark.png`).
   - `src/components/`: Reusable UI components.
-    - `common/`: Shared components (`Button`, `Loader`, `Modal`, `UserAvatar`, `SearchInput`, `PageHeader`, `ErrorBanner`, `DeleteConfirmationModal`, `AuthButton`, `ChartCard`, `EmptyChart`, `ErrorBoundary`, `FormField`, `ThemeToggle`, `AppToaster`).
+    - `common/`: Shared components (`Button`, `Loader`, `Modal`, `UserAvatar`, `SearchInput`, `PageHeader`, `ErrorBanner`, `DeleteConfirmationModal`, `AuthButton`, `AuthMessage`, `ChartCard`, `EmptyChart`, `ErrorBoundary`, `FormField`, `ThemeToggle`, `AppToaster`).
     - `dashboard/`: Dashboard-specific components (`StatsCard`, `RecentExpenses`, `ExpenseChart`, `MonthlyExpenseChart`, `BudgetHealth`).
     - `expense/`: Expense-specific components (`ExpenseTable`, `ExpenseForm`, `FilterBar`, `DateRangeFilter`, `Pagination`, `ExportModal`, `QuickAddExpenseModal`).
     - `budget/`: Budget-specific components (`BudgetForm`, `BudgetCard`, `BudgetOverview`, `MonthSelector`).
@@ -73,21 +75,21 @@ graph TD
   - `src/constants/`: Application-wide constants (`categories.js`).
   - `src/hooks/`: Custom React hooks.
   - `src/layouts/`: Layout wrappers (`DashboardLayout`, `AuthLayout`).
-  - `src/pages/`: Main page components (`Login`, `Register`, `Dashboard`, `Expenses`, `Budgets`, `Profile`, `NotFound`).
+  - `src/pages/`: Main page components (`Login`, `Register`, `ForgotPassword`, `ResetPassword`, `Dashboard`, `Expenses`, `Budgets`, `Profile`, `NotFound`).
   - `src/redux/`: Redux store configuration, state slices (`authSlice`, `expenseSlice`, `dashboardSlice`, `budgetSlice`, `themeSlice`), and API service wrappers under `redux/services/` (`expenseApi.js`, `dashboardApi.js`, `budgetApi.js`, `authApi.js`, `exportApi.js`, `aiApi.js`).
-  - `src/utils/`: Utility functions, Zod validation schemas (`authSchema.js`, `expenseSchema.js`, `budgetSchema.js`, `formatters.js`), theme helpers (`theme.js`), and export helpers (`pdfExport.js` — client-side PDF report generation).
+  - `src/utils/`: Utility functions, Zod validation schemas (`authSchema.js` — includes `loginSchema`, `registerSchema`, `forgotPasswordSchema`, `resetPasswordSchema`, `expenseSchema.js`, `budgetSchema.js`, `formatters.js`), theme helpers (`theme.js`), and export helpers (`pdfExport.js` — client-side PDF report generation).
 - `server/`: Contains the backend Node.js application.
   - `config/`: Database connection configuration (`db.js`).
   - `controllers/`: Business logic for handling incoming requests (`authController.js`, `expenseController.js`, `userController.js`, `budgetController.js`, `aiController.js`).
   - `middleware/`: Custom Express middlewares (`authMiddleware.js`, `upload.js` for Multer).
   - `models/`: Mongoose schemas and models (`User.js`, `Expense.js`, `Budget.js`).
   - `routes/`: API endpoint definitions (`authRoutes.js`, `expenseRoutes.js`, `userRoutes.js`, `budgetRoutes.js`, `aiRoutes.js`).
-  - `services/`: Decoupled service integrations (`imageKitService.js`, `aiService.js` — wraps the Gemini API call and prompt construction).
+  - `services/`: Decoupled service integrations (`imageKitService.js`, `aiService.js` — wraps the Gemini API call and prompt construction, `emailService.js` — Nodemailer/Gmail SMTP wrapper for sending password reset emails).
   - `utils/`: Helper functions and utilities.
 
 ## Core Modules
 
-- **Authentication Module (`authController`, `authRoutes`, `User` model)**: Handles user registration, login, password hashing (bcrypt), and JWT generation.
+- **Authentication Module (`authController`, `authRoutes`, `User` model, `emailService`)**: Handles user registration, login, password hashing (bcrypt), and JWT generation. Also handles password reset: `forgotPassword` generates a random token, stores only its SHA-256 hash plus a 15-minute expiry on the `User` document, and emails the raw token as a link via `emailService` (Nodemailer/Gmail); `resetPassword` verifies the hashed token and expiry, then re-hashes and saves the new password (manually, via `bcrypt.hash`, mirroring `registerUser` — there is no Mongoose pre-save hashing hook). The endpoint always returns the same generic response regardless of whether the submitted email is registered, to avoid leaking account existence.
 - **Expense Module (`expenseController`, `expenseRoutes`, `Expense` model)**: Manages creating, fetching (with filtering, search, pagination), updating, and deleting expenses. Provides dashboard statistics via server-side aggregation (including per-category and trailing-12-month totals for the dashboard charts). Checks projected budget impact before an expense is saved and refreshes budget status after any expense change.
 - **AI Module (`aiService`, `aiController`, `aiRoutes`, `QuickAddExpenseModal`)**: Parses free-text expense descriptions into structured drafts using the Gemini API. The prompt supplies the current server date (for resolving relative dates like "yesterday") and the exact category enum, and constrains the model's output to JSON via `responseMimeType`. The controller never trusts the model's output blindly — invalid categories fall back to `other`, a missing/invalid amount fails the request outright rather than guessing, unparseable dates fall back to today, and a missing title falls back to a truncated version of the raw input. Parsed drafts are handed to the existing `ExpenseForm` for user review — never saved directly — so all existing validation and budget-check logic applies unchanged.
 - **Export Module (`exportExpenses` in `expenseController`, `ExportModal`, `pdfExport.js`)**: Exposes a filter-aware, non-paginated export endpoint returning either a streamed CSV file or JSON (used to build a PDF client-side). Shares its filter-building logic with `getExpenses` via a common helper. The PDF includes a summary, category breakdown, and a budget snapshot for whichever month the export covers (or the current month, if the export spans multiple months or is unfiltered).
@@ -105,24 +107,27 @@ graph TD
 3. **Authentication**: If unauthenticated, the user is redirected to Login/Register. Form submissions trigger API calls (`axios`) to `/api/auth/login` or `/api/auth/register`. Auth page imagery swaps automatically based on the active theme, and on mobile (where that imagery is hidden) a compact branded header takes its place.
 4. **API Processing**: The server validates the data, performs database operations via Mongoose, and responds with a JWT on success.
 5. **State Update**: The client stores the JWT and updates the Redux state (`authSlice`), then redirects to the Dashboard.
-6. **Data Fetching**: Protected routes (Dashboard/Expenses/Budgets) dispatch API calls to fetch data, attaching the JWT in the `Authorization` header.
-7. **Data Display**: React components render the data, and charts (`recharts`) visualize server-aggregated statistics, with theme-aware colors for gridlines, axes, and tooltips.
-8. **Adding an Expense (AI-assisted)**: Clicking "Add Expense" opens the Quick Add modal. The user describes the expense in plain text; it's sent to `/api/ai/parse-expense`, parsed and sanitized server-side, and the result opens pre-filled in the standard expense form (flagged as AI-parsed) for review — or the user can bypass this entirely via "Enter manually instead" for a blank form.
-9. **Adding/Editing an Expense (validation)**: Regardless of entry path, before the expense is saved, the client checks projected spend against the relevant category and overall budgets for that expense's month. If it would exceed a limit, the user sees an inline warning and must confirm "Save Anyway" before the API call is made; a distinct toast confirms an over-budget save.
-10. **Budget Tracking**: On the Budgets page, users set/edit per-category or overall limits for any month (past, current, or future) via a modal form; `BudgetOverview` renders color-coded progress cards, refetched whenever the selected month changes or an expense affecting that month is created/updated/deleted.
-11. **Exporting Data**: From the Expenses page, the user picks a scope (all expenses or the current filtered view) and a format (CSV or PDF). CSV is streamed directly from the server; PDF is assembled client-side from the same export endpoint's JSON response plus a budget-status lookup for the relevant month.
-12. **Avatar Upload**: User selects an image on the Profile page → Multer receives the file buffer → `imageKitService` uploads it to ImageKit → the returned CDN URL is saved to the User document in MongoDB → Redux state is updated via `updateUser` → Navbar avatar re-renders immediately.
+6. **Forgot/Reset Password**: From Login, the user can go to `/forgot-password` and submit their email; the server always returns the same generic message, and — if a matching account exists — emails a reset link containing a random token (`/reset-password/:token`) that expires in 15 minutes. Opening that link lets the user set a new password via `/api/auth/reset-password/:token`; an invalid or expired token shows an inline error with a link to request a new one, instead of a form.
+7. **Data Fetching**: Protected routes (Dashboard/Expenses/Budgets) dispatch API calls to fetch data, attaching the JWT in the `Authorization` header.
+8. **Data Display**: React components render the data, and charts (`recharts`) visualize server-aggregated statistics, with theme-aware colors for gridlines, axes, and tooltips.
+9. **Adding an Expense (AI-assisted)**: Clicking "Add Expense" opens the Quick Add modal. The user describes the expense in plain text; it's sent to `/api/ai/parse-expense`, parsed and sanitized server-side, and the result opens pre-filled in the standard expense form (flagged as AI-parsed) for review — or the user can bypass this entirely via "Enter manually instead" for a blank form.
+10. **Adding/Editing an Expense (validation)**: Regardless of entry path, before the expense is saved, the client checks projected spend against the relevant category and overall budgets for that expense's month. If it would exceed a limit, the user sees an inline warning and must confirm "Save Anyway" before the API call is made; a distinct toast confirms an over-budget save.
+11. **Budget Tracking**: On the Budgets page, users set/edit per-category or overall limits for any month (past, current, or future) via a modal form; `BudgetOverview` renders color-coded progress cards, refetched whenever the selected month changes or an expense affecting that month is created/updated/deleted.
+12. **Exporting Data**: From the Expenses page, the user picks a scope (all expenses or the current filtered view) and a format (CSV or PDF). CSV is streamed directly from the server; PDF is assembled client-side from the same export endpoint's JSON response plus a budget-status lookup for the relevant month.
+13. **Avatar Upload**: User selects an image on the Profile page → Multer receives the file buffer → `imageKitService` uploads it to ImageKit → the returned CDN URL is saved to the User document in MongoDB → Redux state is updated via `updateUser` → Navbar avatar re-renders immediately.
 
 ## Data Models
 
 ### User
 
-| Field       | Type   | Attributes                           |
-| :---------- | :----- | :----------------------------------- |
-| `name`      | String | required, maxlength: 50              |
-| `email`     | String | required, unique, maxlength: 100     |
-| `password`  | String | required, min 8 chars, select: false |
-| `avatarUrl` | String | optional — ImageKit CDN URL          |
+| Field                  | Type   | Attributes                                            |
+| :--------------------- | :----- | :---------------------------------------------------- |
+| `name`                 | String | required, maxlength: 50                               |
+| `email`                | String | required, unique, maxlength: 100                      |
+| `password`             | String | required, min 8 chars, select: false                  |
+| `avatarUrl`            | String | optional — ImageKit CDN URL                           |
+| `resetPasswordToken`   | String | optional, select: false — SHA-256 hash of reset token |
+| `resetPasswordExpires` | Date   | optional, select: false — reset token expiry (15 min) |
 
 ### Expense
 
@@ -239,6 +244,7 @@ No additional environment variables are required for Dark Mode, Budgets, or Expo
 | `SearchInput`             | Controlled search input, wired to URL search params.                                                                                                                                   |
 | `PageHeader`              | Standardized page title + subtitle block.                                                                                                                                              |
 | `AuthButton`              | Thin `Button` wrapper preset for auth forms (full-width, submit type).                                                                                                                 |
+| `AuthMessage`             | Success/error banner for auth flows (e.g. "check your email" after a reset request, or "link invalid/expired" on `ResetPassword`), with an optional action link.                       |
 | `ChartCard`               | Shared animated wrapper for dashboard chart cards (title + empty state + content).                                                                                                     |
 | `EmptyChart`              | Empty-state illustration shown inside `ChartCard` when there's no data yet.                                                                                                            |
 | `ErrorBoundary`           | Class component catching render errors app-wide, shows a themed fallback screen with reload option.                                                                                    |
@@ -265,6 +271,7 @@ No additional environment variables are required for Dark Mode, Budgets, or Expo
 - `mongoose`: MongoDB object modeling tool.
 - `jsonwebtoken`: Implementation of JSON Web Tokens for auth.
 - `bcrypt`: Library to hash passwords securely.
+- `nodemailer`: Sends password reset emails via Gmail SMTP.
 - `dotenv`: Loads environment variables from a `.env` file.
 - `cors`: Express middleware to enable Cross-Origin Resource Sharing.
 - `multer`: Middleware for handling `multipart/form-data` (file uploads).
@@ -276,6 +283,7 @@ No additional environment variables are required for Dark Mode, Budgets, or Expo
 - **Authentication**: JWT-based stateless authentication protects user sessions.
 - **Passwords**: Passwords are hashed securely using `bcrypt` before storage. They are never returned in queries (`select: false`). The show/hide visibility toggle on password fields is purely a client-side UI convenience and has no effect on how passwords are transmitted or stored.
 - **Authorization**: `authMiddleware` protects private routes, decoding the JWT to ensure users only access their own data — including budgets, exports, and AI parsing requests, which are always scoped to `req.user._id` or otherwise gated behind a valid session.
+- **Password Reset**: The reset token is generated with `crypto.randomBytes(32)`; only its SHA-256 hash is stored, so a compromised database doesn't expose usable tokens. Tokens expire after 15 minutes and are cleared after a single use. The `/forgot-password` endpoint always responds with the same generic message whether or not the email is registered, to prevent user enumeration.
 - **AI Input Handling**: User-supplied free text is sent to the Gemini API for parsing, but the model's output is never trusted or persisted blindly — the server validates the category against a fixed enum, rejects invalid/non-positive amounts outright, and falls back sensibly on ambiguous dates or missing titles. Parsed results are never auto-saved; they always require explicit user confirmation via the standard expense form.
 - **CORS**: Enabled on the server to manage cross-origin requests; currently unrestricted by origin (see Deployment section for the tradeoff).
 - **File Uploads**: Multer uses memory storage (no disk writes) and the file buffer is passed directly to ImageKit, reducing server-side file exposure.
@@ -366,3 +374,6 @@ Validation is enforced both on the **client** (via Zod schemas in `authSchema.js
 - **Favicon Not Updating**: Browsers cache favicons aggressively. If a new tab icon (`client/public/logo.png`) doesn't appear after deploying, try a hard refresh or an incognito window before assuming it's broken.
 - **AI Quick Add Returns "Couldn't understand that"**: Check the server console for the underlying Gemini error (logged explicitly in `aiController.js`). A common cause is Google deprecating the configured `GEMINI_MODEL` for new API keys — check Google AI Studio for the current recommended flash-tier model name and update the env var accordingly.
 - **AI Quick Add Fails with a 404 Mentioning "no longer available to new users"**: The model in `GEMINI_MODEL` has been deprecated for new keys. Swap it for the currently recommended flash model (check Google's quickstart docs, since this has changed multiple times) and restart the server.
+- **Forgot Password Email Not Sending ("Invalid login" error)**: `EMAIL_USER`/`EMAIL_PASS` must be a Gmail address with 2-Step Verification enabled and an **App Password** (not the real account password) generated at myaccount.google.com/apppasswords.
+- **Reset Link Says "Invalid or Expired"**: The token is single-use and expires in 15 minutes — request a new link from `/forgot-password` rather than reusing an old email.
+- **Reset Password Email Lands in Spam**: Common for a freshly configured Gmail SMTP sending address; not a bug. Improves over time as the sending address builds reputation.
