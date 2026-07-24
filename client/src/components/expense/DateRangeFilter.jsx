@@ -31,7 +31,12 @@ const DateRangeFilter = () => {
         <input
           type={startDate ? "date" : "text"}
           placeholder="dd-mm-yyy"
-          onFocus={(e) => (e.target.type = "date")}
+          onFocus={(e) => {
+            e.target.type = "date";
+            try {
+              if (e.target.showPicker) e.target.showPicker();
+            } catch (err) {}
+          }}
           onBlur={(e) => {
             if (!e.target.value) e.target.type = "text";
           }}
@@ -49,7 +54,12 @@ const DateRangeFilter = () => {
         <input
           type={endDate ? "date" : "text"}
           placeholder="dd-mm-yyy"
-          onFocus={(e) => (e.target.type = "date")}
+          onFocus={(e) => {
+            e.target.type = "date";
+            try {
+              if (e.target.showPicker) e.target.showPicker();
+            } catch (err) {}
+          }}
           onBlur={(e) => {
             if (!e.target.value) e.target.type = "text";
           }}
