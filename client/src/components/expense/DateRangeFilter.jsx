@@ -16,57 +16,48 @@ const DateRangeFilter = () => {
       params.delete(name);
     }
 
-    // reset pagination whenever filter changes
     params.set("page", "1");
-
     setSearchParams(params);
   };
+
+  const inputClass =
+    "w-full min-h-[46px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:focus:ring-blue-950 dark:[color-scheme:dark]";
 
   return (
     <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
       <div className="flex w-full flex-col sm:w-auto">
-        <label className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+        <label
+          htmlFor="filter-start-date"
+          className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400"
+        >
           Start Date
         </label>
         <input
-          type={startDate ? "date" : "text"}
-          placeholder="dd-mm-yyy"
-          onFocus={(e) => {
-            e.target.type = "date";
-            try {
-              if (e.target.showPicker) e.target.showPicker();
-            } catch (err) {}
-          }}
-          onBlur={(e) => {
-            if (!e.target.value) e.target.type = "text";
-          }}
+          id="filter-start-date"
+          type="date"
           name="startDate"
           value={startDate}
           onChange={handleChange}
-          className="w-full min-h-[46px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950 dark:[color-scheme:dark]"
+          placeholder="Select Date"
+          className={`${inputClass} ${startDate ? "text-slate-700 dark:text-slate-200" : "text-slate-400 dark:text-slate-500"}`}
         />
       </div>
 
       <div className="flex w-full flex-col sm:w-auto">
-        <label className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+        <label
+          htmlFor="filter-end-date"
+          className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400"
+        >
           End Date
         </label>
         <input
-          type={endDate ? "date" : "text"}
-          placeholder="dd-mm-yyy"
-          onFocus={(e) => {
-            e.target.type = "date";
-            try {
-              if (e.target.showPicker) e.target.showPicker();
-            } catch (err) {}
-          }}
-          onBlur={(e) => {
-            if (!e.target.value) e.target.type = "text";
-          }}
+          id="filter-end-date"
+          type="date"
           name="endDate"
           value={endDate}
           onChange={handleChange}
-          className="w-full min-h-[46px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950 dark:[color-scheme:dark]"
+          placeholder="Select Date"
+          className={`${inputClass} ${endDate ? "text-slate-700 dark:text-slate-200" : "text-slate-400 dark:text-slate-500"}`}
         />
       </div>
     </div>
