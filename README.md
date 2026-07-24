@@ -9,6 +9,8 @@
 
 A full-stack web application built with the MERN stack for tracking personal expenses. It allows users to register, log in, manage their expenses (including via natural-language AI parsing), set monthly budgets, and export their data as CSV/PDF reports. The app features a beautiful, responsive UI with seamless light and dark modes.
 
+Demo Link: https://expense-tracker-rho-two-72.vercel.app/
+
 ## ✨ Key Features
 
 - **🔐 Secure Authentication**: JWT-based user registration and login, plus a secure password reset flow via email.
@@ -18,6 +20,15 @@ A full-stack web application built with the MERN stack for tracking personal exp
 - **📤 Export Data**: Download your expenses and budget status as a clean PDF report or a raw CSV file.
 - **🎨 Modern UI/UX**: Built with React 19, Tailwind CSS v4, and Framer Motion. Fully responsive with a built-in Dark Mode that remembers your preference.
 - **🖼️ Profile Customization**: Upload your own profile avatar (powered by ImageKit).
+
+## 🖼️ Screenshots
+
+<img width="1901" height="900" alt="image" src="https://github.com/user-attachments/assets/a2bc9b29-47a2-43f0-b94e-a44ace8d8cec" />
+<img width="1907" height="901" alt="image" src="https://github.com/user-attachments/assets/bdba93f2-cd7f-42db-b98a-2bd904b17f65" />
+<img width="1895" height="901" alt="image" src="https://github.com/user-attachments/assets/090fa503-860f-4ea9-93f3-3770ba6b6c40" />
+<img width="1897" height="902" alt="image" src="https://github.com/user-attachments/assets/59249f71-f9b7-4b29-92e7-474025c24d6e" />
+<img width="1895" height="900" alt="image" src="https://github.com/user-attachments/assets/8bd5d53f-4aaa-43b4-a80e-e2e3a9af0c8a" />
+<img width="1892" height="895" alt="image" src="https://github.com/user-attachments/assets/5af22525-6ce0-4823-8777-6b6b9075272e" />
 
 ## 🛠️ Technology Stack
 
