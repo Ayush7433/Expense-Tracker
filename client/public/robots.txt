@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Authenticated application pages are not public search content.
+Disallow: /dashboard
+Disallow: /expenses
+Disallow: /budgets
+Disallow: /profile
+Disallow: /reset-password/
+
+Sitemap: https://expense-tracker-rho-two-72.vercel.app/sitemap.xml
